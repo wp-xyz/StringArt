@@ -341,11 +341,11 @@ object MainForm: TMainForm
     Height = 624
     Top = 0
     Width = 621
-    ActivePage = TabSheet2
+    ActivePage = pgImages
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 1
-    object TabSheet1: TTabSheet
+    object pgImages: TTabSheet
       Caption = 'Images'
       ClientHeight = 596
       ClientWidth = 613
@@ -354,29 +354,29 @@ object MainForm: TMainForm
         Height = 596
         Top = 0
         Width = 613
-        HorzScrollBar.Increment = 59
-        HorzScrollBar.Page = 592
+        HorzScrollBar.Increment = 10
+        HorzScrollBar.Page = 100
         HorzScrollBar.Smooth = True
         HorzScrollBar.Tracking = True
-        VertScrollBar.Increment = 57
-        VertScrollBar.Page = 575
+        VertScrollBar.Increment = 10
+        VertScrollBar.Page = 100
         VertScrollBar.Smooth = True
         VertScrollBar.Tracking = True
         Align = alClient
-        ClientHeight = 575
-        ClientWidth = 592
+        ClientHeight = 592
+        ClientWidth = 609
         TabOrder = 0
         object PaintBox: TPaintBox
           Left = 0
-          Height = 600
+          Height = 100
           Top = 0
-          Width = 600
+          Width = 100
           OnPaint = PaintBoxPaint
         end
       end
     end
-    object TabSheet2: TTabSheet
-      Caption = 'Result'
+    object pgConnections: TTabSheet
+      Caption = 'Connections'
       ClientHeight = 596
       ClientWidth = 613
       object Panel2: TPanel
@@ -391,7 +391,7 @@ object MainForm: TMainForm
         ClientHeight = 26
         ClientWidth = 601
         TabOrder = 0
-        object Label3: TLabel
+        object lblImgDiameter: TLabel
           AnchorSideLeft.Control = Panel2
           AnchorSideTop.Control = seImgDiameter
           AnchorSideTop.Side = asrCenter
@@ -403,7 +403,7 @@ object MainForm: TMainForm
           Caption = 'Diameter of "hardware" image'
         end
         object seImgDiameter: TFloatSpinEdit
-          AnchorSideLeft.Control = Label3
+          AnchorSideLeft.Control = lblImgDiameter
           AnchorSideLeft.Side = asrBottom
           AnchorSideTop.Control = Panel2
           AnchorSideTop.Side = asrCenter
@@ -417,7 +417,7 @@ object MainForm: TMainForm
           Value = 30
           OnChange = seImgDiameterChange
         end
-        object Label4: TLabel
+        object lblMeters: TLabel
           AnchorSideLeft.Control = seImgDiameter
           AnchorSideLeft.Side = asrBottom
           AnchorSideTop.Control = seImgDiameter
@@ -449,11 +449,11 @@ object MainForm: TMainForm
       end
       object lbUsedNails: TListBox
         AnchorSideLeft.Control = Panel2
-        AnchorSideTop.Control = lblLength
+        AnchorSideTop.Control = lblWireLength
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = Panel2
         AnchorSideRight.Side = asrBottom
-        AnchorSideBottom.Control = TabSheet2
+        AnchorSideBottom.Control = pgConnections
         AnchorSideBottom.Side = asrBottom
         Left = 6
         Height = 535
@@ -467,7 +467,7 @@ object MainForm: TMainForm
         TabOrder = 1
         OnResize = lbUsedNailsResize
       end
-      object lblLength: TLabel
+      object lblWireLength: TLabel
         AnchorSideLeft.Control = Panel2
         AnchorSideTop.Control = Panel2
         AnchorSideTop.Side = asrBottom

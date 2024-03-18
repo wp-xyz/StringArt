@@ -11,14 +11,6 @@ uses
   Forms, Controls,Dialogs, ExtCtrls, StdCtrls, ComCtrls, Spin, Buttons, ExtDlgs,
   FPImage, IntfGraphics, LazCanvas;
 
-const
-  //FILE_NAME = '../../samples/Lenna_(test_image).png';
-  //FILE_NAME = '../../samples/Jack_Nicholson.png';
-//  FILE_NAME = '../../samples/testimg.png';
-//  FILE_NAME = '../../samples/portrait-junge-frau-brille.png';
-  FILE_NAME = '../../samples/terry-adj.jpg';
-//  FILE_NAME = '../../samples/terry-2.jpg';
-
 type
   TDoublePoint = record
     X, Y: Double;
@@ -36,14 +28,14 @@ type
     btnSaveConnections: TButton;
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
-    Label4: TLabel;
-    lblLength: TLabel;
+    lblMeters: TLabel;
+    lblWireLength: TLabel;
     seImgDiameter: TFloatSpinEdit;
     gbImgSelection: TGroupBox;
     gbImgPreparation: TGroupBox;
     gbProcess: TGroupBox;
     Label2: TLabel;
-    Label3: TLabel;
+    lblImgDiameter: TLabel;
     lbUsedNails: TListBox;
     OpenPictureDialog: TOpenPictureDialog;
     OrigImage: TImage;
@@ -65,8 +57,8 @@ type
     seNumLines: TSpinEdit;
     btnBrowse: TSpeedButton;
     btnOpen: TSpeedButton;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
+    pgImages: TTabSheet;
+    pgConnections: TTabSheet;
     TrackBar: TTrackBar;
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
@@ -170,6 +162,15 @@ begin
   end;
 end;
 
+{ Set font style of Groupbox caption to bold, but keep items normal }
+procedure BoldGroup(AControl: TCustomGroupBox);
+var
+  i: Integer;
+begin
+  AControl.Font.Style := [fsBold];
+  for i:=0 to AControl.ControlCount-1 do
+    AControl.Controls[i].Font.Style := [];
+end;
 
 { TMainForm }
 
@@ -233,8 +234,11 @@ end;
 
 procedure TMainForm.cbFileNamesCloseUp(Sender: TObject);
 begin
-  cbFileNames.Text := cbFileNames.Items[cbFileNames.ItemIndex];
-  LoadImage(cbFileNames.Text);
+  if cbFileNames.ItemIndex > -1 then
+  begin
+    cbFileNames.Text := cbFileNames.Items[cbFileNames.ItemIndex];
+    LoadImage(cbFileNames.Text);
+  end;
 end;
 
 procedure TMainForm.cbFileNamesDropDown(Sender: TObject);
@@ -408,11 +412,21 @@ begin
   PageControl.TabIndex := 0;
   cgDisplay.Checked[SHOW_STRING_IMAGE] := true;
 
+  BoldGroup(gbImgSelection);
+  BoldGroup(gbImgPreparation);
+  BoldGroup(cgDisplay);
+  BoldGroup(gbProcess);
+
+  Paintbox.Width := 0;
+  Paintbox.Height := 0;
+
   ReadIni;
   if ParamCount > 0 then
     cbFileNames.Text := ParamStr(1);
 
-  LoadImage(cbFileNames.Text);
+  if (cbFileNames.Text <> '') and FileExists(cbFileNames.Text) then
+    LoadImage(cbFileNames.Text);
+
   Reset;
 end;
 
@@ -940,7 +954,7 @@ var
 begin
   if (FWorkImg = nil) or (FUsedNails.Count <= 1) then
   begin
-    lblLength.Caption := TOTAL_LENGTH_TEXT;
+    lblWireLength.Caption := TOTAL_LENGTH_TEXT;
     exit;
   end;
 
@@ -955,7 +969,7 @@ begin
     P1 := P2;
   end;
   len := len / (FWorkImg.Width*0.5) * R;
-  LblLength.Caption := Format(TOTAL_LENGTH_TEXT + '%.2n m', [len]);
+  lblWireLength.Caption := Format(TOTAL_LENGTH_TEXT + '%.2n m', [len]);
 end;
 
 procedure TMainForm.WriteIni;
