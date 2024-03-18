@@ -7,9 +7,9 @@
    id="svg2"
    sodipodi:docname="stringart.svg"
    inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
-   inkscape:export-filename="marker02_300.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96"
+   inkscape:export-filename="stringart.png"
+   inkscape:export-xdpi="256"
+   inkscape:export-ydpi="256"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +26,7 @@
      showgrid="true"
      inkscape:current-layer="svg2"
      inkscape:zoom="6.2387442"
-     inkscape:cx="107.5537"
+     inkscape:cx="105.63023"
      inkscape:cy="42.396353"
      inkscape:window-width="2560"
      inkscape:window-height="1009"
@@ -71,17 +71,16 @@
     </radialGradient>
   </defs>
   <ellipse
-     style="fill:#ffffff;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.9;paint-order:markers fill stroke;stroke-dasharray:1, 19;stroke:#000000;stroke-opacity:1;stroke-dashoffset:0"
+     style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.9;stroke-dasharray:1, 19;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
      id="path394"
      cx="47.973087"
      cy="47.943333"
      rx="43.946629"
      ry="44.089729" />
   <path
-     style="fill:none;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"
-     d="M 40.232456,5.1292374 92.486562,49.36891 9.1364541,26.127053 35.263507,90.723386 76.778272,15.548001 87.036747,68.60355 6.5718354,65.718354 3.6866394,45.68227 9.7776088,27.409362 59.787673,6.7321241 74.854808,83.510396 35.263507,90.402809 19.154496,81.707149 22.400341,11.400532 56.802297,91.735209 88.639633,31.015858"
-     id="path24666"
-     sodipodi:nodetypes="cccccccccccccccc" />
+     style="fill:none;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:bevel;stroke-opacity:1;stroke-dasharray:none"
+     d="M 60.268539,6.0909694 74.694519,83.830973 3.6866394,45.68227 77.419427,14.906846 56.902477,91.845407 10.098186,25.806476 88.319056,31.416579 35.744373,90.723386 22.92128,12.823093 92.005696,49.208621 18.593486,81.106066 40.392744,4.4880827 86.876458,68.443261 6.2512581,65.397777 Z"
+     id="path28074" />
   <circle
      style="fill:#b3b3b3;stroke:none;stroke-width:1.46794;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:3.9;stroke-dasharray:1.46794, 27.8908;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
      id="path10938"
