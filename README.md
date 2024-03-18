@@ -13,4 +13,4 @@ The word "arbitrary" mentioned above is a bit too ambitious. Images with too man
 ![screenshot_stringart](https://github.com/wp-xyz/StringArt/assets/30792460/bf2dbacd-56a6-425e-a566-d7e362b87afe)
 
 # Compilation
-The project is written in Object Pascal and must be compiled with a recent Lazarus/FreePascal version (tests back to Lazarus v2.0.8 and FPC 3.0.4 were successful, probably even older versions will work as well). Additional libraries and packages are not required. The code should compile for Windows (tested: Windows 11), Linux and Mac.
+The project is written in Object Pascal and must be compiled with a recent Lazarus/FreePascal version (tests back to Lazarus v2.0 and FPC 3.0 were successful). Additional libraries and packages are not required. The code should compile for Windows (tested: Windows 11), Linux and Mac.
