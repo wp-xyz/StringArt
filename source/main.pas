@@ -742,7 +742,7 @@ var
   P1, P2: TPoint;
   i: Integer;
 begin
-  Screen.BeginWaitCursor;
+  Screen.Cursor := crHourglass; //BeginWaitCursor;
   try
     FWorkCanvas.Pen.FPColor := colWhite;
     FWorkCanvas.Pen.Style := psSolid;
@@ -767,7 +767,7 @@ begin
     UpdateResultsPage;
 
   finally
-    Screen.EndWaitCursor;
+    Screen.Cursor := crDefault; //EndWaitCursor;
   end;
 end;
 

@@ -6,9 +6,9 @@ object MainForm: TMainForm
   Caption = 'String Art'
   ClientHeight = 624
   ClientWidth = 917
-  LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  LCLVersion = '2.0.8.0'
   object Panel1: TPanel
     Left = 8
     Height = 608
@@ -40,6 +40,7 @@ object MainForm: TMainForm
         Width = 55
         BorderSpacing.Left = 12
         Caption = 'Image file:'
+        ParentColor = False
       end
       object cbFileNames: TComboBox
         AnchorSideLeft.Control = gbImgSelection
@@ -55,9 +56,9 @@ object MainForm: TMainForm
         BorderSpacing.Bottom = 6
         ItemHeight = 15
         ItemWidth = 500
-        TabOrder = 0
         OnCloseUp = cbFileNamesCloseUp
         OnDropDown = cbFileNamesDropDown
+        TabOrder = 0
       end
       object btnBrowse: TSpeedButton
         AnchorSideTop.Control = cbFileNames
@@ -96,6 +97,7 @@ object MainForm: TMainForm
         Width = 58
         BorderSpacing.Bottom = 8
         Caption = 'Image size:'
+        ParentColor = False
       end
       object OrigImage: TImage
         AnchorSideLeft.Control = gbImgSelection
@@ -134,6 +136,7 @@ object MainForm: TMainForm
         Width = 85
         BorderSpacing.Left = 8
         Caption = 'Number of nails'
+        ParentColor = False
       end
       object seNumNails: TSpinEdit
         AnchorSideLeft.Control = lblNumNails
@@ -145,10 +148,10 @@ object MainForm: TMainForm
         Width = 70
         Alignment = taRightJustify
         BorderSpacing.Left = 8
-        MaxValue = -1
+        MaxValue = 0
+        OnChange = seNumNailsChange
         TabOrder = 0
         Value = 360
-        OnChange = seNumNailsChange
       end
       object rbGrayscale: TRadioButton
         AnchorSideLeft.Control = gbImgPreparation
@@ -157,14 +160,14 @@ object MainForm: TMainForm
         Left = 8
         Height = 19
         Top = 35
-        Width = 126
+        Width = 128
         BorderSpacing.Left = 8
         BorderSpacing.Top = 12
         Caption = 'Convert to grayscale'
         Checked = True
+        OnChange = rbGrayscaleChange
         TabOrder = 2
         TabStop = True
-        OnChange = rbGrayscaleChange
       end
       object rbMonochrome: TRadioButton
         AnchorSideLeft.Control = gbImgPreparation
@@ -173,25 +176,25 @@ object MainForm: TMainForm
         Left = 8
         Height = 19
         Top = 54
-        Width = 150
+        Width = 152
         BorderSpacing.Left = 8
         Caption = 'Convert to monochrome'
-        TabOrder = 1
         OnChange = rbMonochromeChange
+        TabOrder = 1
       end
       object TrackBar: TTrackBar
         AnchorSideLeft.Control = rbMonochrome
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = rbMonochrome
         AnchorSideTop.Side = asrCenter
-        Left = 174
+        Left = 176
         Height = 25
         Top = 51
         Width = 92
         Frequency = 32
         Max = 255
-        Position = 128
         OnChange = TrackBarChange
+        Position = 128
         BorderSpacing.Left = 16
         BorderSpacing.Right = 6
         BorderSpacing.Bottom = 6
@@ -226,8 +229,8 @@ object MainForm: TMainForm
         'Original image'
         'Work image'
       )
-      TabOrder = 2
       OnItemClick = cgDisplayItemClick
+      TabOrder = 2
       Data = {
         0400000002020202
       }
@@ -255,8 +258,8 @@ object MainForm: TMainForm
         AutoSize = True
         BorderSpacing.Left = 8
         Caption = 'Reset'
-        TabOrder = 0
         OnClick = btnResetClick
+        TabOrder = 0
       end
       object btnCalculate: TButton
         AnchorSideLeft.Control = gbProcess
@@ -268,8 +271,8 @@ object MainForm: TMainForm
         AutoSize = True
         BorderSpacing.Left = 8
         Caption = 'Calculate'
-        TabOrder = 1
         OnClick = btnCalculateClick
+        TabOrder = 1
       end
       object lblTotalLineCount: TLabel
         AnchorSideLeft.Control = seNumLines
@@ -281,6 +284,7 @@ object MainForm: TMainForm
         Width = 84
         BorderSpacing.Top = 8
         Caption = 'Total line count:'
+        ParentColor = False
       end
       object lblMax: TLabel
         AnchorSideLeft.Control = lblTotalLineCount
@@ -292,6 +296,7 @@ object MainForm: TMainForm
         Width = 82
         BorderSpacing.Bottom = 8
         Caption = 'Max line count:'
+        ParentColor = False
       end
       object seNumLines: TSpinEdit
         AnchorSideLeft.Control = btnCalculate
@@ -303,7 +308,7 @@ object MainForm: TMainForm
         Width = 73
         Alignment = taRightJustify
         BorderSpacing.Top = 4
-        MaxValue = -1
+        MaxValue = 0
         TabOrder = 2
         Value = 1000
       end
@@ -318,6 +323,7 @@ object MainForm: TMainForm
         Width = 24
         BorderSpacing.Left = 4
         Caption = 'lines'
+        ParentColor = False
       end
       object btnSave: TButton
         AnchorSideLeft.Control = btnReset
@@ -331,8 +337,8 @@ object MainForm: TMainForm
         BorderSpacing.Left = 8
         Caption = 'Save image'
         Enabled = False
-        TabOrder = 3
         OnClick = btnSaveClick
+        TabOrder = 3
       end
     end
   end
@@ -401,6 +407,7 @@ object MainForm: TMainForm
           Width = 160
           BorderSpacing.Right = 8
           Caption = 'Diameter of "hardware" image'
+          ParentColor = False
         end
         object seImgDiameter: TFloatSpinEdit
           AnchorSideLeft.Control = lblImgDiameter
@@ -412,10 +419,11 @@ object MainForm: TMainForm
           Top = 2
           Width = 66
           Alignment = taRightJustify
-          MaxValue = -1
+          MaxValue = 0
+          MinValue = 0
+          OnChange = seImgDiameterChange
           TabOrder = 0
           Value = 30
-          OnChange = seImgDiameterChange
         end
         object lblMeters: TLabel
           AnchorSideLeft.Control = seImgDiameter
@@ -428,6 +436,7 @@ object MainForm: TMainForm
           Width = 17
           BorderSpacing.Left = 4
           Caption = 'cm'
+          ParentColor = False
         end
         object btnSaveConnections: TButton
           AnchorSideTop.Control = Panel2
@@ -443,8 +452,8 @@ object MainForm: TMainForm
           BorderSpacing.Left = 24
           Caption = 'Save connection list'
           Enabled = False
-          TabOrder = 1
           OnClick = btnSaveConnectionsClick
+          TabOrder = 1
         end
       end
       object lbUsedNails: TListBox
@@ -464,8 +473,8 @@ object MainForm: TMainForm
         BorderSpacing.Bottom = 4
         Columns = 4
         ItemHeight = 0
-        TabOrder = 1
         OnResize = lbUsedNailsResize
+        TabOrder = 1
       end
       object lblWireLength: TLabel
         AnchorSideLeft.Control = Panel2
@@ -476,6 +485,7 @@ object MainForm: TMainForm
         Top = 38
         Width = 104
         Caption = 'Total length of wire:'
+        ParentColor = False
       end
     end
   end
@@ -483,18 +493,18 @@ object MainForm: TMainForm
     DefaultExt = '.png'
     Filter = 'png files|.png|All files|*.*'
     Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
-    Left = 312
-    Top = 472
+    left = 312
+    top = 472
   end
   object OpenPictureDialog: TOpenPictureDialog
-    Left = 216
-    Top = 72
+    left = 216
+    top = 72
   end
   object SaveDialog: TSaveDialog
     DefaultExt = '.txt'
     Filter = 'Text files (*.txt)|*.txt'
     Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
-    Left = 312
-    Top = 526
+    left = 312
+    top = 526
   end
 end
