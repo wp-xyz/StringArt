@@ -10,7 +10,7 @@ This task is solved to some degree by this project:
 
 The word "arbitrary" mentioned above is a bit too ambitious. Images with too many details, too little contrast, or contrast at the wrong place will not be rendered well by this technique. And even with the "good" ones it is important to find the correct number of connections: if there are too few connetions significant details are not yet resolved, if there are too many the image becomes too dark.
 
-![screenshot_stringart](https://github.com/wp-xyz/StringArt/assets/30792460/bf2dbacd-56a6-425e-a566-d7e362b87afe)
+![screenshot_stringart](https://github.com/wp-xyz/StringArt/assets/30792460/2e4f854e-42a5-45f4-aa45-f54d1a5b4dd0)
 
 # Compilation
 The project is written in Object Pascal and must be compiled with a recent Lazarus/FreePascal version (tests back to Lazarus v2.0 and FPC 3.0 were successful). Additional libraries and packages are not required. The code should compile for Windows (tested: Windows 11), Linux and Mac.
