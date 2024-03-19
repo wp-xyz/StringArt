@@ -8,7 +8,7 @@ interface
 uses
   Classes, SysUtils, IniFiles, IntegerList,
   LCLIntf, LCLType, Graphics, GraphUtil, Types,
-  Forms, Controls,Dialogs, ExtCtrls, StdCtrls, ComCtrls, Spin, Buttons, ExtDlgs,
+  Forms, Controls, Dialogs, ExtCtrls, StdCtrls, ComCtrls, Spin, Buttons, ExtDlgs,
   FPImage, IntfGraphics, LazCanvas;
 
 type
@@ -24,26 +24,32 @@ type
   TMainForm = class(TForm)
     btnReset: TButton;
     btnCalculate: TButton;
-    btnSave: TButton;
+    btnSaveImg: TButton;
     btnSaveConnections: TButton;
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
+    fseBrightnessTransferExponent: TFloatSpinEdit;
+    infoBrightestGrayValue: TLabel;
+    infoDarkestGrayValue: TLabel;
+    lblBrightestGray: TLabel;
+    lblBrightnessTransferExponent: TLabel;
     lblMeters: TLabel;
     lblWireLength: TLabel;
+    ProgressBar: TProgressBar;
+    seBrightestGrayValue: TFloatSpinEdit;
     seImgDiameter: TFloatSpinEdit;
     gbImgSelection: TGroupBox;
     gbImgPreparation: TGroupBox;
     gbProcess: TGroupBox;
-    Label2: TLabel;
+    lblNumLines: TLabel;
     lblImgDiameter: TLabel;
     lbUsedNails: TListBox;
     OpenPictureDialog: TOpenPictureDialog;
     OrigImage: TImage;
     Label1: TLabel;
     lblImgSize: TLabel;
-    lblMax: TLabel;
+    lblDarkestGray: TLabel;
     lblNumNails: TLabel;
-    lblTotalLineCount: TLabel;
     PageControl: TPageControl;
     PaintBox: TPaintBox;
     Panel1: TPanel;
@@ -53,19 +59,26 @@ type
     SaveDialog: TSaveDialog;
     SavePictureDialog: TSavePictureDialog;
     ScrollBox: TScrollBox;
+    seDarkestGrayValue: TFloatSpinEdit;
     seNumNails: TSpinEdit;
     seNumLines: TSpinEdit;
     btnBrowse: TSpeedButton;
     btnOpen: TSpeedButton;
     pgImages: TTabSheet;
     pgConnections: TTabSheet;
+    btnUseHighestGrayValue: TSpeedButton;
+    btnUseDarkestGray: TSpeedButton;
+    StatusBar: TStatusBar;
     TrackBar: TTrackBar;
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
     procedure btnResetClick(Sender: TObject);
     procedure btnCalculateClick(Sender: TObject);
-    procedure btnSaveClick(Sender: TObject);
     procedure btnSaveConnectionsClick(Sender: TObject);
+    procedure btnSaveImgClick(Sender: TObject);
+    procedure btnUseDarkestGrayClick(Sender: TObject);
+    procedure btnUseHighestGrayValueClick(Sender: TObject);
+    procedure cbFileNamesChange(Sender: TObject);
     procedure cbFileNamesCloseUp(Sender: TObject);
     procedure cbFileNamesDropDown(Sender: TObject);
     procedure cbShowOrigImgChange(Sender: TObject);
@@ -90,9 +103,9 @@ type
 
     function GetAverageLineGray(ANail1, ANail2, ALineWidth: Integer): Double;
     procedure GetThickLineGray(x1, y1, x2, y2, ALineWidth: Integer;
-      var ASum: Int64; var ACount: Integer);
+      var ASum: Double; var ACount: Integer);
     procedure GetThinLineGray(x1, y1, x2, y2: Integer;
-      var ASum: Int64; var ACount: Integer);
+      var ASum: Double; var ACount: Integer);
 
   protected
     procedure AddToFileHistory(const AFileName: String);
@@ -110,6 +123,7 @@ type
     procedure Reset;
     procedure SaveConnections(const AFileName: String);
     procedure SaveImage(const AFileName: String);
+    procedure UpdateContrastInfo;
     procedure UpdateResultsPage;
     procedure UpdateTotalLineCount;
     procedure UpdateWireLength;
@@ -206,20 +220,21 @@ end;
 
 procedure TMainForm.btnOpenClick(Sender: TObject);
 begin
-  LoadImage(cbFileNames.Text);
+  if (cbFilenames.Text <> '') then
+    LoadImage(cbFileNames.Text);
 end;
 
 procedure TMainForm.btnCalculateClick(Sender: TObject);
 begin
-  Process(seNumLines.Value);
-end;
-
-procedure TMainForm.btnSaveClick(Sender: TObject);
-begin
-  with SavePictureDialog do
-  begin
-    if Execute then
-      SaveImage(FileName);
+  ProgressBar.Parent := Statusbar;
+  Progressbar.Align := alClient;
+  Progressbar.Position := 0;
+  Progressbar.Max := seNumLines.Value-1;
+  Progressbar.Visible := true;
+  try
+    Process(seNumLines.Value);
+  finally
+    Progressbar.Hide;
   end;
 end;
 
@@ -227,9 +242,43 @@ procedure TMainForm.btnSaveConnectionsClick(Sender: TObject);
 begin
   with SaveDialog do
   begin
+    if FileName <> '' then
+    begin
+      InitialDir := ExtractFileDir(FileName);
+      FileName := ''; //ExtractFileName(FileName);
+    end;
     if Execute then
       SaveConnections(FileName);
   end;
+end;
+
+procedure TMainForm.btnSaveImgClick(Sender: TObject);
+begin
+  with SavePictureDialog do
+  begin
+    if FileName <> '' then
+    begin
+      InitialDir := ExtractFileDir(FileName);
+      FileName := ''; //ExtractFileName(FileName);
+    end;
+    if Execute then
+      SaveImage(FileName);
+  end;
+end;
+
+procedure TMainForm.btnUseDarkestGrayClick(Sender: TObject);
+begin
+  seDarkestGrayValue.Value := StrToFloat(infoDarkestGrayValue.Caption);
+end;
+
+procedure TMainForm.btnUseHighestGrayValueClick(Sender: TObject);
+begin
+  seBrightestGrayValue.Value := StrToFloat(infoBrightestGrayValue.Caption);
+end;
+
+procedure TMainForm.cbFileNamesChange(Sender: TObject);
+begin
+  btnOpen.Enabled := (cbFileNames.Text <> '');
 end;
 
 procedure TMainForm.cbFileNamesCloseUp(Sender: TObject);
@@ -416,6 +465,7 @@ begin
   BoldGroup(gbImgPreparation);
   BoldGroup(cgDisplay);
   BoldGroup(gbProcess);
+  btnCalculate.Font.Style := [fsBold];
 
   Paintbox.Width := 0;
   Paintbox.Height := 0;
@@ -454,8 +504,8 @@ end;
 function TMainForm.GetAverageLineGray(ANail1, ANail2, ALineWidth: Integer): Double;
 var
   P1, P2: TPoint;
-  sum: Int64;
   count: Integer;
+  sum: Double;
 begin
   if (ANail1 < 0) or (ANail1 > High(FNailPos)) or
      (ANail2 < 0) or (ANail2 > High(FNailPos)) then
@@ -467,19 +517,19 @@ begin
   P1 := FNailPos[ANail1].Round;
   P2 := FNailPos[ANail2].Round;
 
-  sum := 0;
+  sum := 0.0;
   count := 0;
   if ALineWidth = 1 then
     GetThinLineGray(P1.X, P1.Y, P2.X, P2.Y, sum, count)
   else
     GetThickLineGray(P1.X, P1.Y, P2.X, P2.Y, ALineWidth, sum, count);
 
-  Result := sum/count;
+  Result := sum / count;
 end;
 
 
 procedure TMainForm.GetThickLineGray(x1, y1, x2, y2, ALineWidth: Integer;
-  var ASum: Int64; var ACount: Integer);
+  var ASum: Double; var ACount: Integer);
 var
   w1, w2, r: integer;
   MoreHor: boolean;
@@ -508,16 +558,26 @@ begin
 end;
 
 procedure TMainForm.GetThinLineGray(x1, y1, x2, y2: Integer;
-  var ASum: Int64; var ACount: Integer);
+  var ASum: Double; var ACount: Integer);
+var
+  minGray, maxGray, exponent: Double;
 
-  function GetPixelGray(x, y: Integer): Integer;
+  function GetPixelGray(x, y: Integer): Double;
   var
-    c: TColor;
+    gray: Double;
   begin
     x := EnsureRange(x, 0, FWorkImg.Width-1);
     y := EnsureRange(y, 0, FWorkImg.Height-1);
-    c := FPColorToTColor(FWorkImg.Colors[x, y]);
-    Result := ColorToGray(c);
+    gray := FWorkImg.Colors[x, y].Red / word($FFFF);  // We have grayscale, i.e. Red is ok
+    if (minGray <> 0.0) or (maxGray <> 1.0) then
+    begin
+      gray := (gray - minGray) / (maxGray - minGray);
+      gray := EnsureRange(gray, 0.0, 1.0);
+    end;
+    if fseBrightnessTransferExponent.Value = 1.0 then
+      Result := gray
+    else
+      Result := Power(gray, exponent);
   end;
 
 var
@@ -564,6 +624,10 @@ var
 var
   x, y, i: Integer;
 begin
+  maxGray := seBrightestGrayValue.Value;
+  minGray := seDarkestGrayValue.Value;
+  exponent := fseBrightnessTransferExponent.Value;
+
   InitLine(x1, y1, x2, y2);
   x := x1;
   y := y1;
@@ -626,6 +690,12 @@ end;
 
 procedure TMainForm.LoadImage(const AFileName: String);
 begin
+  if not FileExists(AFilename) then
+  begin
+    MessageDlg(Format('File "%s" not found.', [AFileName]), mtError, [mbOk], 0);
+    exit;
+  end;
+
   FWorkCanvas.Free;
   FWorkImg.Free;
   FOrigImg.Free;
@@ -644,11 +714,13 @@ begin
   if rbMonochrome.Checked then
     MakeMonochrome;
 
+  UpdateContrastInfo;
+
   FWorkCanvas := TLazCanvas.Create(FWorkImg);
 
   InitNails(seNumNails.Value);
   AddToFileHistory(AFileName);
-  lblMax.Caption := Format('Max line count: %.0n', [NumNails * (NumNails-1) / 2]);
+  Statusbar.Panels[1].Text := Format('Max: %.0n lines', [NumNails * (NumNails-1) / 2]);
 
   Reset;
 end;
@@ -742,6 +814,9 @@ var
   P1, P2: TPoint;
   i: Integer;
 begin
+  if FWorkImg = nil then
+    exit;
+
   Screen.Cursor := crHourglass; //BeginWaitCursor;
   try
     FWorkCanvas.Pen.FPColor := colWhite;
@@ -750,6 +825,13 @@ begin
     nail1 := FLastNail;
     for i := 0 to ANumLines - 1 do
     begin
+      if i mod 10 = 0 then
+      begin
+        Progressbar.Position := i;
+        Progressbar.Repaint;
+        Application.ProcessMessages;
+      end;
+
       nail2 := NextNail(nail1);
       FindDarkestLine(nail1, nail2);
       {%H-}FUsedNails.Add(nail2);
@@ -760,8 +842,8 @@ begin
       nail1 := nail2;
     end;
     Paintbox.Invalidate;
-    btnSave.Enabled := FUsedNails.Count > 1;
-    btnSaveConnections.Enabled := btnSave.Enabled;
+    btnSaveImg.Enabled := FUsedNails.Count > 1;
+    btnSaveConnections.Enabled := btnSaveImg.Enabled;
 
     UpdateTotalLineCount;
     UpdateResultsPage;
@@ -792,9 +874,14 @@ var
   ini: TCustomIniFile;
   L: TStrings;
   i, n: Integer;
+  x: Double;
   s: String;
   b1, b2: Boolean;
+  fs: TFormatSettings;
 begin
+  fs := DefaultformatSettings;
+  fs.DecimalSeparator := '.';
+
   ini := CreateIni;
   try
     n := ini.ReadInteger('Parameters', 'NumNails', seNumNails.Value);
@@ -815,6 +902,18 @@ begin
     cgDisplay.Checked[SHOW_NAILS]        := ini.ReadBool('Parameters', 'Display Nails', false);
     cgDisplay.Checked[SHOW_ORIG_IMAGE]   := ini.ReadBool('Parameters', 'Display OrigImage', false);
     cgDisplay.Checked[SHOW_WORK_IMAGE]   := ini.ReadBool('Parameters', 'Display WorkImage', false);
+
+    s := ini.ReadString('Parameters', 'MaxGray', '');
+    if TryStrToFloat(s, x, fs) then
+      seBrightestGrayValue.Value := x;
+
+    s := ini.ReadString('Parameters', 'MinGray', '');
+    if TryStrToFloat(s, x, fs) then
+      seDarkestGrayValue.Value := x;
+
+    s := ini.ReadString('Parameters', 'BrightnessTransferExponent', '');
+    if TryStrToFloat(s, x,fs ) then
+      fseBrightnessTransferExponent.Value := x;
 
     n := ini.ReadInteger('Parameters', 'NumLines', seNumLines.Value);
     if n > 0 then
@@ -851,7 +950,7 @@ begin
   FLastNail := 0;
   FUsedNails.Clear;
   {%H-}FUsedNails.Add(FLastNail);
-  btnSave.Enabled := false;
+  btnSaveImg.Enabled := false;
   btnSaveConnections.Enabled := false;
   UpdateTotalLineCount;
   UpdateResultsPage;
@@ -901,7 +1000,7 @@ var
 begin
   InitNails(seNumNails.Value);
   n := seNumNails.Value;
-  lblMax.Caption := Format('Max line count: %.0n', [n * (n-1) / 2]);
+  lblDarkestGray.Caption := Format('Max line count: %.0n', [n * (n-1) / 2]);
   Paintbox.Invalidate;
 end;
 
@@ -910,6 +1009,30 @@ begin
   if rbMonochrome.Checked then
     MakeMonochrome;
 end;
+
+procedure TMainForm.UpdateContrastInfo;
+const
+  MAX_WORD = $FFFF;
+var
+  x, y: Integer;
+  mn, mx: Word;
+  gray: word;
+begin
+  mn := MAX_WORD;
+  mx := 0;
+  for y := 0 to FWorkImg.Height-1 do
+    for x := 0 to FWorkImg.Width-1 do
+    begin
+      gray := FPImage.CalculateGray(FWorkImg.Colors[x,y]);
+      if gray = 0 then
+        gray := gray+1-1;
+      mn := Min(mn, gray);
+      mx := Max(mx, gray);
+    end;
+  infoBrightestGrayValue.Caption := Format('%.3f', [mx / MAX_WORD]);
+  infoDarkestGrayValue.Caption := Format('%.3f', [mn / MAX_WORD]);
+end;
+
 
 procedure TMainForm.UpdateResultsPage;
 var
@@ -934,7 +1057,10 @@ end;
 
 procedure TMainForm.UpdateTotalLineCount;
 begin
-  lblTotalLineCount.Caption := Format('Total line count: %d', [FUsedNails.Count-1]);
+  if FUsedNails.Count <= 1 then
+    Statusbar.Panels[0].Text := ''
+  else
+    StatusBar.Panels[0].Text := Format('Total: %d lines', [FUsedNails.Count-1]);
 end;
 
 procedure TMainForm.UpdateWirelength;
@@ -975,8 +1101,12 @@ end;
 procedure TMainForm.WriteIni;
 var
   ini: TCustomIniFile;
+  fs: TFormatSettings;
   i: Integer;
 begin
+  fs := DefaultFormatSettings;
+  fs.DecimalSeparator := '.';
+
   ini := CreateIni;
   try
     ini.EraseSection('Parameters');
@@ -988,6 +1118,9 @@ begin
     ini.WriteBool('Parameters', 'Display Nails', cgDisplay.Checked[SHOW_NAILS]);
     ini.WriteBool('Parameters', 'Display OrigImage', cgDisplay.Checked[SHOW_ORIG_IMAGE]);
     ini.WriteBool('Parameters', 'Display WorkImage', cgDisplay.Checked[SHOW_WORK_IMAGE]);
+    ini.WriteString('Parameters', 'MaxGray', FormatFloat('0.000', seBrightestGrayValue.Value, fs));
+    ini.WriteString('Parameters', 'MinGray', FormatFloat('0.000', seDarkestGrayValue.Value, fs));
+    ini.WriteString('Parameters', 'BrightnessTransferExponent', FormatFloat('0.00', fseBrightnessTransferExponent.Value, fs));
     ini.WriteInteger('Parameters', 'NumLines', seNumLines.Value);
 
     ini.EraseSection('RecentlyUsed');
