@@ -312,14 +312,14 @@ object MainForm: TMainForm
         Value = 1000
       end
       object lblNumLines: TLabel
-        AnchorSideLeft.Control = lblBrightnessTransferExponent
+        AnchorSideLeft.Control = gbProcess
         AnchorSideTop.Control = seNumLines
         AnchorSideTop.Side = asrCenter
-        Left = 12
+        Left = 8
         Height = 15
         Top = 85
         Width = 88
-        BorderSpacing.Left = 4
+        BorderSpacing.Left = 8
         Caption = 'Number of lines:'
         ParentColor = False
       end

@@ -872,11 +872,13 @@ end;
 procedure TMainForm.ReadIni;
 var
   ini: TCustomIniFile;
-  L: TStrings;
+  list: TStrings;
   i, n: Integer;
   x: Double;
   s: String;
   b1, b2: Boolean;
+  L, T, W, H: Integer;
+  R: TRect;
   fs: TFormatSettings;
 begin
   fs := DefaultformatSettings;
@@ -884,6 +886,18 @@ begin
 
   ini := CreateIni;
   try
+    T := ini.ReadInteger('MainForm', 'Top', Top);
+    L := ini.ReadInteger('MainForm', 'Left', Left);
+    W := ini.ReadInteger('MainForm', 'Width', Width);
+    H := ini.ReadInteger('MainForm', 'Height', Height);
+
+    R := Screen.WorkAreaRect;
+    if W > R.Width then W := R.Width;
+    if H > R.Height then H := R.Height;
+    if L + W > R.Right then L := R.Right - W;
+    if T + H > R.Bottom then T := R.Bottom - H;
+    SetBounds(L, T, W, H);
+
     n := ini.ReadInteger('Parameters', 'NumNails', seNumNails.Value);
     if n > 0 then
       seNumNails.Value := n;
@@ -919,19 +933,19 @@ begin
     if n > 0 then
       seNumLines.Value := n;
 
-    L := TStringList.Create;
+    list := TStringList.Create;
     try
-      ini.ReadSection('RecentlyUsed', L);
+      ini.ReadSection('RecentlyUsed', list);
       cbFileNames.Items.Clear;
-      n := Min(L.Count, MAX_HISTORY);
+      n := Min(list.Count, MAX_HISTORY);
       for i := 0 to n-1 do
       begin
-        s := ini.ReadString('RecentlyUsed', L[i], '');
+        s := ini.ReadString('RecentlyUsed', list[i], '');
         if (s <> '') and FileExists(s) and (cbFileNames.Items.IndexOf(s) = -1) then
           cbFileNames.Items.Add(s);
       end;
     finally
-      L.Free;
+      list.Free;
     end;
   finally
     ini.Free;
@@ -1109,6 +1123,12 @@ begin
 
   ini := CreateIni;
   try
+    ini.EraseSection('MainForm');
+    ini.WriteInteger('MainForm', 'Top', Top);
+    ini.WriteInteger('MainForm', 'Left', Left);
+    ini.WriteInteger('MainForm', 'Width', Width);
+    ini.WriteInteger('MainForm', 'Height', Height);
+
     ini.EraseSection('Parameters');
     ini.WriteInteger('Parameters', 'NumNails', seNumNails.Value);
     ini.WriteBool('Parameters', 'ConvertToGrayScale', rbGrayscale.Checked);
