@@ -31,6 +31,7 @@ type
     fseBrightnessTransferExponent: TFloatSpinEdit;
     infoBrightestGrayValue: TLabel;
     infoDarkestGrayValue: TLabel;
+    lblNailDistance: TLabel;
     lblBrightestGray: TLabel;
     lblBrightnessTransferExponent: TLabel;
     lblMeters: TLabel;
@@ -124,6 +125,8 @@ type
     procedure SaveConnections(const AFileName: String);
     procedure SaveImage(const AFileName: String);
     procedure UpdateContrastInfo;
+    procedure UpdateMaxLineCount;
+    procedure UpdateNailDistance;
     procedure UpdateResultsPage;
     procedure UpdateTotalLineCount;
     procedure UpdateWireLength;
@@ -152,6 +155,24 @@ const
   SHOW_NAILS = 1;
   SHOW_ORIG_IMAGE = 2;
   SHOW_WORK_IMAGE = 3;
+
+type
+  TBrightnessTransferFunction = function(x, y: Double): Double;
+
+function LinearTransferFunction(x, y: double): Double;
+begin
+  Result := x;
+end;
+
+function SqrtTransferFunction(x, y: Double): Double;
+begin
+  Result := sqrt(x);
+end;
+
+function PowerTransferFunction(x,y : Double): Double;
+begin
+  Result := Power(x, y);
+end;
 
 function TDoublePoint.Round: TPoint;
 begin
@@ -226,8 +247,6 @@ end;
 
 procedure TMainForm.btnCalculateClick(Sender: TObject);
 begin
-  ProgressBar.Parent := Statusbar;
-  Progressbar.Align := alClient;
   Progressbar.Position := 0;
   Progressbar.Max := seNumLines.Value-1;
   Progressbar.Visible := true;
@@ -574,10 +593,7 @@ var
       gray := (gray - minGray) / (maxGray - minGray);
       gray := EnsureRange(gray, 0.0, 1.0);
     end;
-    if fseBrightnessTransferExponent.Value = 1.0 then
-      Result := gray
-    else
-      Result := Power(gray, exponent);
+    Result := gray;
   end;
 
 var
@@ -720,25 +736,41 @@ begin
 
   InitNails(seNumNails.Value);
   AddToFileHistory(AFileName);
-  Statusbar.Panels[1].Text := Format('Max: %.0n lines', [NumNails * (NumNails-1) / 2]);
+  UpdateMaxLineCount;
 
   Reset;
 end;
 
 procedure TMainForm.MakeGrayScale;
+const
+  MAX_GRAY: word = $FFFF;
 var
   x,y: Integer;
-  c: TColor;
+  grayValue: Word;
+  gray: Double;       // 0 ... 1
+  BTF: TBrightnessTransferFunction;
+  BTFexponent: Double;
 begin
   if FWorkImg = nil then
     exit;
+
+  BTFExponent := fseBrightnessTransferExponent.Value;
+  if BTFExponent = 1.0 then
+    BTF := @LinearTransferFunction
+  else if BTFExponent = 0.5 then
+    BTF := @SqrtTransferFunction
+  else
+    BTF := @PowerTransferFunction;
 
   FWorkImg.CopyPixels(FOrigImg);
   for y := 0 to FWorkImg.Height-1 do
     for x := 0 to FWorkImg.Width - 1 do
     begin
-      c := ColorToGray(FPColorToTColor(FWorkImg.Colors[x, y]));
-      FWorkImg.Colors[x, y] := FPColor($101*c, $101*c, $101*c);
+      grayValue := CalculateGray(FWorkImg.Colors[x, y]);
+      gray := BTF(grayValue / MAX_GRAY, BTFExponent);
+      gray := EnsureRange(gray*MAX_GRAY, 0, MAX_GRAY);
+      grayValue := round(gray);
+      FWorkImg.Colors[x, y] := FPColor(grayValue, grayValue, grayValue);
     end;
   Paintbox.Invalidate;
 end;
@@ -829,6 +861,7 @@ begin
       begin
         Progressbar.Position := i;
         Progressbar.Repaint;
+        UpdateTotalLineCount;
         Application.ProcessMessages;
       end;
 
@@ -1006,15 +1039,14 @@ end;
 procedure TMainForm.seImgDiameterChange(Sender: TObject);
 begin
   UpdateWireLength;
+  UpdateNailDistance;
 end;
 
 procedure TMainForm.seNumNailsChange(Sender: TObject);
-var
-  n: Integer;
 begin
   InitNails(seNumNails.Value);
-  n := seNumNails.Value;
-  lblDarkestGray.Caption := Format('Max line count: %.0n', [n * (n-1) / 2]);
+  UpdateMaxLineCount;
+  UpdateNailDistance;
   Paintbox.Invalidate;
 end;
 
@@ -1047,6 +1079,33 @@ begin
   infoDarkestGrayValue.Caption := Format('%.3f', [mn / MAX_WORD]);
 end;
 
+procedure TMainForm.UpdateMaxLineCount;
+var
+  n: Integer;
+begin
+  n := seNumNails.Value;
+  if n > 1 then
+    Statusbar.Panels[1].Text := Format('Max: %.0n lines', [n * (n-1) / 2])
+  else
+    Statusbar.Panels[1].Text := '';
+end;
+
+procedure TMainForm.UpdateNailDistance;
+const
+  DIST_TEXT = 'Distance between nails: ';
+var
+  circumference: Double;
+  dist: Double;
+begin
+  if seNumNails.Value <= 0 then
+    lblNailDistance.Caption := DIST_TEXT
+  else
+  begin
+    circumference := seImgDiameter.Value * pi;
+    dist := circumference / seNumNails.Value;
+    lblNailDistance.Caption := DIST_TEXT + Format('%.2f cm', [dist]);
+  end;
+end;
 
 procedure TMainForm.UpdateResultsPage;
 var

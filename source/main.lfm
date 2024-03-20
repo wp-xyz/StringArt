@@ -1,23 +1,23 @@
 object MainForm: TMainForm
   Left = 314
-  Height = 668
+  Height = 714
   Top = 130
   Width = 917
   Caption = 'String Art'
-  ClientHeight = 668
+  ClientHeight = 714
   ClientWidth = 917
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   object Panel1: TPanel
     Left = 8
-    Height = 652
+    Height = 698
     Top = 8
     Width = 280
     Align = alLeft
     BorderSpacing.Around = 8
     BevelOuter = bvNone
-    ClientHeight = 652
+    ClientHeight = 698
     ClientWidth = 280
     TabOrder = 0
     object gbImgSelection: TGroupBox
@@ -165,7 +165,7 @@ object MainForm: TMainForm
         BorderSpacing.Top = 12
         Caption = 'Convert to grayscale'
         Checked = True
-        TabOrder = 2
+        TabOrder = 1
         TabStop = True
         OnChange = rbGrayscaleChange
       end
@@ -179,7 +179,7 @@ object MainForm: TMainForm
         Width = 150
         BorderSpacing.Left = 8
         Caption = 'Convert to monochrome'
-        TabOrder = 1
+        TabOrder = 2
         OnChange = rbMonochromeChange
       end
       object TrackBar: TTrackBar
@@ -258,7 +258,7 @@ object MainForm: TMainForm
         AutoSize = True
         BorderSpacing.Left = 8
         Caption = 'Reset'
-        TabOrder = 0
+        TabOrder = 5
         OnClick = btnResetClick
       end
       object btnCalculate: TButton
@@ -277,7 +277,7 @@ object MainForm: TMainForm
         Caption = 'Calculate'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 1
+        TabOrder = 4
         OnClick = btnCalculateClick
       end
       object lblDarkestGray: TLabel
@@ -308,7 +308,7 @@ object MainForm: TMainForm
         BorderSpacing.Top = 4
         Increment = 100
         MaxValue = 2147483647
-        TabOrder = 2
+        TabOrder = 3
         Value = 1000
       end
       object lblNumLines: TLabel
@@ -335,7 +335,7 @@ object MainForm: TMainForm
         BorderSpacing.Left = 8
         Caption = 'Save image'
         Enabled = False
-        TabOrder = 3
+        TabOrder = 6
         OnClick = btnSaveImgClick
       end
       object lblBrightestGray: TLabel
@@ -362,7 +362,7 @@ object MainForm: TMainForm
         BorderSpacing.Top = 4
         Increment = 0.01
         MaxValue = 999
-        TabOrder = 4
+        TabOrder = 2
         Value = 1
       end
       object lblBrightnessTransferExponent: TLabel
@@ -414,7 +414,7 @@ object MainForm: TMainForm
         DecimalPlaces = 3
         Increment = 0.001
         MaxValue = 2
-        TabOrder = 5
+        TabOrder = 0
         Value = 1
       end
       object seDarkestGrayValue: TFloatSpinEdit
@@ -434,7 +434,7 @@ object MainForm: TMainForm
         Increment = 0.01
         MaxValue = 1
         MinValue = -1
-        TabOrder = 6
+        TabOrder = 1
       end
       object btnUseHighestGrayValue: TSpeedButton
         AnchorSideLeft.Control = seBrightestGrayValue
@@ -464,7 +464,7 @@ object MainForm: TMainForm
     object StatusBar: TStatusBar
       Left = 0
       Height = 23
-      Top = 629
+      Top = 675
       Width = 280
       Panels = <      
         item
@@ -475,35 +475,44 @@ object MainForm: TMainForm
         end>
       SimplePanel = False
     end
+    object ProgressBar: TProgressBar
+      Left = 0
+      Height = 20
+      Top = 655
+      Width = 280
+      Align = alBottom
+      TabOrder = 4
+      Visible = False
+    end
   end
   object PageControl: TPageControl
     Left = 296
-    Height = 668
+    Height = 714
     Top = 0
     Width = 621
-    ActivePage = pgImages
+    ActivePage = pgConnections
     Align = alClient
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 1
     object pgImages: TTabSheet
       Caption = 'Images'
-      ClientHeight = 640
+      ClientHeight = 686
       ClientWidth = 613
       object ScrollBox: TScrollBox
         Left = 0
-        Height = 640
+        Height = 686
         Top = 0
         Width = 613
-        HorzScrollBar.Increment = 13
-        HorzScrollBar.Page = 133
+        HorzScrollBar.Increment = 10
+        HorzScrollBar.Page = 100
         HorzScrollBar.Smooth = True
         HorzScrollBar.Tracking = True
-        VertScrollBar.Increment = 13
-        VertScrollBar.Page = 132
+        VertScrollBar.Increment = 10
+        VertScrollBar.Page = 100
         VertScrollBar.Smooth = True
         VertScrollBar.Tracking = True
         Align = alClient
-        ClientHeight = 636
+        ClientHeight = 682
         ClientWidth = 609
         TabOrder = 0
         object PaintBox: TPaintBox
@@ -513,19 +522,11 @@ object MainForm: TMainForm
           Width = 100
           OnPaint = PaintBoxPaint
         end
-        object ProgressBar: TProgressBar
-          Left = 16
-          Height = 20
-          Top = 112
-          Width = 117
-          TabOrder = 0
-          Visible = False
-        end
       end
     end
     object pgConnections: TTabSheet
       Caption = 'Connections'
-      ClientHeight = 640
+      ClientHeight = 686
       ClientWidth = 613
       object Panel2: TPanel
         Left = 6
@@ -605,8 +606,8 @@ object MainForm: TMainForm
         AnchorSideBottom.Control = pgConnections
         AnchorSideBottom.Side = asrBottom
         Left = 6
-        Height = 579
-        Top = 57
+        Height = 606
+        Top = 76
         Width = 601
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 4
@@ -618,14 +619,25 @@ object MainForm: TMainForm
       end
       object lblWireLength: TLabel
         AnchorSideLeft.Control = Panel2
+        AnchorSideTop.Control = lblNailDistance
+        AnchorSideTop.Side = asrBottom
+        Left = 6
+        Height = 15
+        Top = 57
+        Width = 104
+        BorderSpacing.Top = 4
+        Caption = 'Total length of wire:'
+        ParentColor = False
+      end
+      object lblNailDistance: TLabel
+        AnchorSideLeft.Control = Panel2
         AnchorSideTop.Control = Panel2
         AnchorSideTop.Side = asrBottom
         Left = 6
         Height = 15
         Top = 38
-        Width = 104
-        Caption = 'Total length of wire:'
-        ParentColor = False
+        Width = 123
+        Caption = 'Distance between nails:'
       end
     end
   end
