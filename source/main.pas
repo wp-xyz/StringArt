@@ -124,6 +124,7 @@ type
     procedure Reset;
     procedure SaveConnections(const AFileName: String);
     procedure SaveImage(const AFileName: String);
+    procedure UpdateCaption;
     procedure UpdateContrastInfo;
     procedure UpdateMaxLineCount;
     procedure UpdateNailDistance;
@@ -147,8 +148,8 @@ uses
   Math;
 
 const
+  MAIN_CAPTION = 'STRING ART';
   NAIL_RADIUS = 2;
-  LINE_WIDTH = 3;
   MAX_HISTORY = 20;
 
   SHOW_STRING_IMAGE = 0;
@@ -477,6 +478,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
   FUsedNails := TIntegerList.Create;
 
+  Caption := MAIN_CAPTION;
   PageControl.TabIndex := 0;
   cgDisplay.Checked[SHOW_STRING_IMAGE] := true;
 
@@ -737,6 +739,7 @@ begin
   InitNails(seNumNails.Value);
   AddToFileHistory(AFileName);
   UpdateMaxLineCount;
+  UpdateCaption;
 
   Reset;
 end;
@@ -1054,6 +1057,14 @@ procedure TMainForm.TrackBarChange(Sender: TObject);
 begin
   if rbMonochrome.Checked then
     MakeMonochrome;
+end;
+
+procedure TMainForm.UpdateCaption;
+begin
+  if cbFileNames.Text <> '' then
+    Caption := MAIN_CAPTION + ' - ' + ExtractFileExt(cbFilenames.Text)
+  else
+    Caption := MAIN_CAPTION
 end;
 
 procedure TMainForm.UpdateContrastInfo;
