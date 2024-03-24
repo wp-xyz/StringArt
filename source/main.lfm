@@ -214,6 +214,7 @@ object MainForm: TMainForm
       Caption = 'Display'
       ChildSizing.LeftRightSpacing = 12
       ChildSizing.TopBottomSpacing = 6
+      ChildSizing.HorizontalSpacing = 16
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.EnlargeVertical = crsHomogenousChildResize
       ChildSizing.ShrinkHorizontal = crsScaleChilds
@@ -490,9 +491,9 @@ object MainForm: TMainForm
     Height = 714
     Top = 0
     Width = 621
-    ActivePage = pgConnections
+    ActivePage = pgImages
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 1
     object pgImages: TTabSheet
       Caption = 'Images'
@@ -563,7 +564,7 @@ object MainForm: TMainForm
           Width = 66
           Alignment = taRightJustify
           TabOrder = 0
-          Value = 30
+          Value = 300
           OnChange = seImgDiameterChange
         end
         object lblMeters: TLabel
@@ -574,9 +575,9 @@ object MainForm: TMainForm
           Left = 238
           Height = 15
           Top = 6
-          Width = 17
+          Width = 22
           BorderSpacing.Left = 4
-          Caption = 'cm'
+          Caption = 'mm'
           ParentColor = False
         end
         object btnSaveConnections: TButton
@@ -596,26 +597,6 @@ object MainForm: TMainForm
           TabOrder = 1
           OnClick = btnSaveConnectionsClick
         end
-      end
-      object lbUsedNails: TListBox
-        AnchorSideLeft.Control = Panel2
-        AnchorSideTop.Control = lblWireLength
-        AnchorSideTop.Side = asrBottom
-        AnchorSideRight.Control = Panel2
-        AnchorSideRight.Side = asrBottom
-        AnchorSideBottom.Control = pgConnections
-        AnchorSideBottom.Side = asrBottom
-        Left = 6
-        Height = 606
-        Top = 76
-        Width = 601
-        Anchors = [akTop, akLeft, akRight, akBottom]
-        BorderSpacing.Top = 4
-        BorderSpacing.Bottom = 4
-        Columns = 4
-        ItemHeight = 0
-        TabOrder = 1
-        OnResize = lbUsedNailsResize
       end
       object lblWireLength: TLabel
         AnchorSideLeft.Control = Panel2
@@ -638,6 +619,20 @@ object MainForm: TMainForm
         Top = 38
         Width = 123
         Caption = 'Distance between nails:'
+      end
+      object Panel3: TPanel
+        AnchorSideLeft.Control = pgConnections
+        AnchorSideRight.Control = pgConnections
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = pgConnections
+        AnchorSideBottom.Side = asrBottom
+        Left = 0
+        Height = 602
+        Top = 84
+        Width = 613
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BevelOuter = bvNone
+        TabOrder = 1
       end
     end
   end
