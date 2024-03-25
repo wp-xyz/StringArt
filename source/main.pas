@@ -25,8 +25,9 @@ type
   TMainForm = class(TForm)
     btnReset: TButton;
     btnCalculate: TButton;
-    btnSaveImg: TButton;
+    btnSaveImage: TButton;
     btnSaveConnections: TButton;
+    btnSaveHardwareImage: TButton;
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
     fseBrightnessTransferExponent: TFloatSpinEdit;
@@ -77,7 +78,8 @@ type
     procedure btnResetClick(Sender: TObject);
     procedure btnCalculateClick(Sender: TObject);
     procedure btnSaveConnectionsClick(Sender: TObject);
-    procedure btnSaveImgClick(Sender: TObject);
+    procedure btnSaveHardwareImageClick(Sender: TObject);
+    procedure btnSaveImageClick(Sender: TObject);
     procedure btnUseDarkestGrayClick(Sender: TObject);
     procedure btnUseHighestGrayValueClick(Sender: TObject);
     procedure cbFileNamesChange(Sender: TObject);
@@ -128,7 +130,8 @@ type
     procedure Process(ANumLines: Integer);
     procedure Reset;
     procedure SaveConnections(const AFileName: String);
-    procedure SaveImage(const AFileName: String);
+    procedure SaveImage(const AFileName: String; ASize: Double = -1);
+    procedure UpdateBtnStates;
     procedure UpdateCaption;
     procedure UpdateConnectionList;
     procedure UpdateContrastInfo(AImage: TFPCustomImage);
@@ -190,6 +193,11 @@ end;
 function CreateIni: TCustomIniFile;
 begin
   Result := TIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
+end;
+
+function mmToPx(mm: Double; PixelsPerInch: Integer): Integer;
+begin
+  Result := round(mm/25.4 * PixelsPerInch);
 end;
 
 function TextSize(AText: String; AFont: TFont): TSize;
@@ -272,21 +280,41 @@ begin
     if FileName <> '' then
     begin
       InitialDir := ExtractFileDir(FileName);
-      FileName := ''; //ExtractFileName(FileName);
+      FileName := '';
     end;
     if Execute then
       SaveConnections(FileName);
   end;
 end;
 
-procedure TMainForm.btnSaveImgClick(Sender: TObject);
+procedure TMainForm.btnSaveHardwareImageClick(Sender: TObject);
 begin
+  if FOrigImg = nil then
+    exit;
+
   with SavePictureDialog do
   begin
     if FileName <> '' then
     begin
       InitialDir := ExtractFileDir(FileName);
-      FileName := ''; //ExtractFileName(FileName);
+      FileName := '';
+    end;
+    if Execute then
+      SaveImage(FileName, seImgDiameter.Value);
+  end;
+end;
+
+procedure TMainForm.btnSaveImageClick(Sender: TObject);
+begin
+  if FOrigImg = nil then
+    exit;
+
+  with SavePictureDialog do
+  begin
+    if FileName <> '' then
+    begin
+      InitialDir := ExtractFileDir(FileName);
+      FileName := '';
     end;
     if Execute then
       SaveImage(FileName);
@@ -432,31 +460,6 @@ begin
         y := R.Top - textExt.CY - NAIL_RADIUS
       else
         y := R.Bottom + NAIL_RADIUS;
-      {
-      if SameValue(phi, PI_1_2, EPS) then
-      begin
-        x := (R.Left + R.Right) div 2;
-        y := R.Top - textExt.CY - NAIL_RADIUS;
-      end else
-      if SameValue(phi, PI_3_2, EPS) then
-      begin
-        x := (R.Left + R.Right) div 2;
-        y := R.Bottom + textExt.CY + NAIL_RADIUS;
-      end else
-      begin
-        if (phi > PI_3_2) or (phi < PI_1_2) then
-          x := R.Right + NAIL_RADIUS
-        else
-          x := R.Left - textExt.CX - NAIL_RADIUS;
-        if (phi < PI_1_4) or (phi > PI_7_4) or ((phi > PI_3_4) and (phi < PI_5_4)) then
-          y := (R.Top + R.Bottom - textExt.CY) div 2
-        else
-        if (pi <= PI_3_4) then
-          y := R.Top - textExt.CY - NAIL_RADIUS
-        else
-          y := R.Bottom + textExt.CY + NAIL_RADIUS;
-      end;
-      }
       Paintbox.Canvas.TextOut(x, y, s);
     end;
   end;
@@ -882,7 +885,7 @@ begin
       Paintbox.Canvas.Draw(FPaintboxMargin.CX, FPaintboxMargin.CY, bmp);
     end else
     begin
-      Paintbox.Canvas.Brush.Color := clDefault;
+      Paintbox.Canvas.Brush.Color := clWindow;
       Paintbox.Canvas.FillRect(0, 0, Paintbox.Width, Paintbox.Height);
     end;
   finally
@@ -941,9 +944,7 @@ begin
       nail1 := nail2;
     end;
     Paintbox.Invalidate;
-    btnSaveImg.Enabled := FUsedNails.Count > 1;
-    btnSaveConnections.Enabled := btnSaveImg.Enabled;
-
+    UpdateBtnStates;
     UpdateTotalLineCount;
     UpdateResultsPage;
 
@@ -1062,31 +1063,66 @@ begin
   FLastNail := 0;
   FUsedNails.Clear;
   {%H-}FUsedNails.Add(FLastNail);
-  btnSaveImg.Enabled := false;
-  btnSaveConnections.Enabled := false;
+  UpdateBtnStates;
   UpdateTotalLineCount;
   UpdateResultsPage;
   Paintbox.Invalidate;
 end;
 
 procedure TMainForm.SaveConnections(const AFileName: String);
+const
+  SEPARATOR = #9;
+var
+  stream: TStream;
+  L: TStrings;
+  s: String;
+  i, j: Integer;
 begin
-  FConnectionGrid.SaveToCSVFile(AFileName);
+  stream := TFileStream.Create(AFileName, fmCreate or fmShareDenyNone);
+  L := TStringList.Create;
+  try
+    L.Delimiter := SEPARATOR;
+    L.StrictDelimiter := true;
+    s := 'Line' + SEPARATOR +
+         'From Nail' + SEPARATOR + 'x' + SEPARATOR + 'y' + SEPARATOR +
+         'To Nail'   + SEPARATOR + 'x' + SEPARATOR + 'y' + SEPARATOR +
+         'Gray' + LineEnding;
+    stream.Write(s[1], Length(s));
+    for i := FConnectionGrid.FixedRows to FConnectionGrid.RowCount - 1 do
+    begin
+      s := FConnectionGrid.Cells[0, i];
+      for j := 1 to FConnectionGrid.ColCount-1 do
+        s := s + SEPARATOR + StringReplace(FConnectionGrid.Cells[j, i], FormatSettings.DecimalSeparator, '.', [rfReplaceAll]);
+      s := s + LineEnding;
+      stream.Write(s[1],Length(s));
+    end;
+  finally
+    L.Free;
+    stream.Free;
+  end;
 end;
 
-procedure TMainForm.SaveImage(const AFileName: String);
-const
-  FACTOR = 2.0;
+procedure TMainForm.SaveImage(const AFileName: String; ASize: Double = -1);
 var
   img: TCustomBitmap;
+  w, h: Integer;
   nailPos: TDoublePointArray = nil;
 begin
   img := TPortableNetworkGraphic.Create;
   try
-    img.SetSize(round(FOrigImg.Width * FACTOR), round(FOrigImg.Height * FACTOR));
+    if ASize <= 0 then
+    begin
+      w := FOrigImg.Width * 2;
+      h := FOrigImg.Height * 2;
+    end else
+    begin
+      w := mmToPx(ASize, ScreenInfo.PixelsPerInchX);
+      h := mmToPx(ASize, ScreenInfo.PixelsPerInchY);
+    end;
+    img.SetSize(w, h);
     img.Canvas.Brush.Color := clWhite;
     img.Canvas.FillRect(0, 0, img.Width, img.Height);
-    InitNails(seNumNails.Value, FOrigImg.Width * FACTOR, nailPos);
+    InitNails(seNumNails.Value, w, nailPos);
     DrawStringImg(img.Canvas, nailPos, Point(0, 0));
     img.SaveToFile(AFileName);
   finally
@@ -1116,6 +1152,13 @@ begin
     MakeMonochrome(FWorkImg);
 end;
 
+procedure TMainForm.UpdateBtnStates;
+begin
+  btnSaveImage.Enabled := FUsedNails.Count > 1;
+  btnSaveHardwareImage.Enabled := btnSaveImage.Enabled;
+  btnSaveConnections.Enabled := btnSaveImage.Enabled;
+end;
+
 procedure TMainForm.UpdateCaption;
 begin
   if cbFileNames.Text <> '' then
@@ -1127,8 +1170,6 @@ end;
 procedure TMainForm.UpdateConnectionList;
 const
   FMT = '0.00';
-const
-  SEPARATOR: array[boolean] of string = ('; ', '; ');
 var
   i, r: Integer;
   diam: Double;
@@ -1136,14 +1177,11 @@ var
   factor: Double;
   P, Pprev: TDoublePoint;
   img: TLazIntfImage;
-  fs: TFormatSettings;
 begin
   if (FWorkImg = nil) or (FUsedNails.Count <= 1) then
     FConnectionGrid.RowCount := 2
   else
   begin
-    fs := DefaultFormatSettings;
-    fs.DecimalSeparator := '.';
     diam := seImgDiameter.Value;
     factor := diam / FWorkImg.Width;
     FConnectionGrid.BeginUpdate;
@@ -1159,16 +1197,16 @@ begin
       begin
         FConnectionGrid.Cells[0, r] := IntToStr(i);
         FConnectionGrid.Cells[1, r] := IntToStr(FUsedNails[i - 1]);
-        FConnectionGrid.Cells[2, r] := FormatFloat(FMT, Pprev.X, fs);
-        FConnectionGrid.Cells[3, r] := FormatFloat(FMT, Pprev.Y, fs);
+        FConnectionGrid.Cells[2, r] := FormatFloat(FMT, Pprev.X);
+        FConnectionGrid.Cells[3, r] := FormatFloat(FMT, Pprev.Y);
         FConnectionGrid.Cells[4, r] := IntToStr(FUsedNails[i]);
         P := FNailPos[FUsedNails[i]];
         P.X := P.X * factor;
         P.Y := P.Y * factor;
-        FConnectionGrid.Cells[5, r] := FormatFloat(FMT, P.X, fs);
-        FConnectionGrid.Cells[6, r] := FormatFloat(FMT, P.Y, fs);
+        FConnectionGrid.Cells[5, r] := FormatFloat(FMT, P.X);
+        FConnectionGrid.Cells[6, r] := FormatFloat(FMT, P.Y);
         gray := GetAverageLineGray(img, FUsedNails[i-1], FUsedNails[i], LINE_WIDTH);
-        FConnectionGrid.Cells[7, r] := FormatFloat('0.000', gray, fs);
+        FConnectionGrid.Cells[7, r] := FormatFloat('0.000', gray);
         Pprev := P;
         inc(r);
       end;

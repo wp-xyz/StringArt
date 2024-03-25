@@ -324,7 +324,7 @@ object MainForm: TMainForm
         Caption = 'Number of lines:'
         ParentColor = False
       end
-      object btnSaveImg: TButton
+      object btnSaveImage: TButton
         AnchorSideLeft.Control = btnReset
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = btnCalculate
@@ -337,7 +337,7 @@ object MainForm: TMainForm
         Caption = 'Save image'
         Enabled = False
         TabOrder = 6
-        OnClick = btnSaveImgClick
+        OnClick = btnSaveImageClick
       end
       object lblBrightestGray: TLabel
         AnchorSideLeft.Control = gbProcess
@@ -491,9 +491,9 @@ object MainForm: TMainForm
     Height = 714
     Top = 0
     Width = 621
-    ActivePage = pgImages
+    ActivePage = pgConnections
     Align = alClient
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 1
     object pgImages: TTabSheet
       Caption = 'Images'
@@ -515,6 +515,9 @@ object MainForm: TMainForm
         Align = alClient
         ClientHeight = 682
         ClientWidth = 609
+        Color = clWindow
+        ParentBackground = False
+        ParentColor = False
         TabOrder = 0
         object PaintBox: TPaintBox
           Left = 0
@@ -591,11 +594,25 @@ object MainForm: TMainForm
           Width = 131
           Anchors = [akTop, akRight]
           AutoSize = True
-          BorderSpacing.Left = 24
+          BorderSpacing.Left = 8
           Caption = 'Save connection list'
           Enabled = False
-          TabOrder = 1
+          TabOrder = 2
           OnClick = btnSaveConnectionsClick
+        end
+        object btnSaveHardwareImage: TButton
+          AnchorSideTop.Control = Panel2
+          AnchorSideTop.Side = asrCenter
+          AnchorSideRight.Control = btnSaveConnections
+          Left = 314
+          Height = 25
+          Top = 1
+          Width = 148
+          Anchors = [akTop, akRight]
+          AutoSize = True
+          Caption = 'Save "hardware" image'
+          TabOrder = 1
+          OnClick = btnSaveHardwareImageClick
         end
       end
       object lblWireLength: TLabel
