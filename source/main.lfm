@@ -1,23 +1,26 @@
 object MainForm: TMainForm
   Left = 314
-  Height = 714
+  Height = 679
   Top = 130
-  Width = 917
+  Width = 874
   Caption = 'String Art'
-  ClientHeight = 714
-  ClientWidth = 917
+  ClientHeight = 679
+  ClientWidth = 874
   LCLVersion = '3.99.0.0'
+  OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  object Panel1: TPanel
+  object ParamsPanel: TPanel
     Left = 8
-    Height = 698
+    Height = 671
     Top = 8
     Width = 280
     Align = alLeft
-    BorderSpacing.Around = 8
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
     BevelOuter = bvNone
-    ClientHeight = 698
+    ClientHeight = 671
     ClientWidth = 280
     TabOrder = 0
     object gbImgSelection: TGroupBox
@@ -117,14 +120,14 @@ object MainForm: TMainForm
     end
     object gbImgPreparation: TGroupBox
       Left = 0
-      Height = 102
+      Height = 105
       Top = 257
       Width = 280
       Align = alTop
       AutoSize = True
       BorderSpacing.Top = 12
       Caption = 'Preparation'
-      ClientHeight = 82
+      ClientHeight = 85
       ClientWidth = 276
       TabOrder = 1
       object lblNumNails: TLabel
@@ -186,10 +189,9 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = rbMonochrome
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = rbMonochrome
-        AnchorSideTop.Side = asrCenter
         Left = 174
         Height = 25
-        Top = 51
+        Top = 54
         Width = 92
         Frequency = 32
         Max = 255
@@ -205,7 +207,7 @@ object MainForm: TMainForm
     object cgDisplay: TCheckGroup
       Left = 0
       Height = 70
-      Top = 371
+      Top = 374
       Width = 280
       Align = alTop
       AutoFill = True
@@ -238,14 +240,14 @@ object MainForm: TMainForm
     end
     object gbProcess: TGroupBox
       Left = 0
-      Height = 169
-      Top = 453
+      Height = 141
+      Top = 456
       Width = 280
       Align = alTop
       AutoSize = True
       BorderSpacing.Top = 12
       Caption = 'Process'
-      ClientHeight = 149
+      ClientHeight = 121
       ClientWidth = 276
       TabOrder = 3
       object btnReset: TButton
@@ -254,62 +256,48 @@ object MainForm: TMainForm
         AnchorSideTop.Control = btnCalculate
         Left = 92
         Height = 25
-        Top = 116
+        Top = 88
         Width = 54
         AutoSize = True
         BorderSpacing.Left = 8
         Caption = 'Reset'
-        TabOrder = 5
+        TabOrder = 3
         OnClick = btnResetClick
       end
       object btnCalculate: TButton
         AnchorSideLeft.Control = gbProcess
-        AnchorSideTop.Control = seNumLines
+        AnchorSideTop.Control = Bevel1
         AnchorSideTop.Side = asrBottom
         AnchorSideBottom.Side = asrBottom
         Left = 8
         Height = 25
-        Top = 116
+        Top = 88
         Width = 76
         AutoSize = True
         BorderSpacing.Left = 8
-        BorderSpacing.Top = 12
+        BorderSpacing.Top = 8
         BorderSpacing.Bottom = 8
         Caption = 'Calculate'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 4
+        TabOrder = 2
         OnClick = btnCalculateClick
-      end
-      object lblDarkestGray: TLabel
-        AnchorSideLeft.Control = gbProcess
-        AnchorSideTop.Control = seDarkestGrayValue
-        AnchorSideTop.Side = asrCenter
-        Left = 8
-        Height = 15
-        Top = 31
-        Width = 96
-        BorderSpacing.Left = 8
-        BorderSpacing.Bottom = 8
-        Caption = 'Darkest gray value'
-        ParentColor = False
       end
       object seNumLines: TSpinEdit
         AnchorSideLeft.Control = fseBrightnessTransferExponent
-        AnchorSideTop.Control = fseBrightnessTransferExponent
-        AnchorSideTop.Side = asrBottom
+        AnchorSideTop.Control = gbProcess
         AnchorSideRight.Control = fseBrightnessTransferExponent
         AnchorSideRight.Side = asrBottom
         Left = 122
         Height = 23
-        Top = 81
+        Top = 4
         Width = 70
         Alignment = taRightJustify
         Anchors = [akTop, akLeft, akRight]
         BorderSpacing.Top = 4
         Increment = 100
         MaxValue = 2147483647
-        TabOrder = 3
+        TabOrder = 1
         Value = 1000
       end
       object lblNumLines: TLabel
@@ -318,7 +306,7 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrCenter
         Left = 8
         Height = 15
-        Top = 85
+        Top = 8
         Width = 88
         BorderSpacing.Left = 8
         Caption = 'Number of lines:'
@@ -330,40 +318,29 @@ object MainForm: TMainForm
         AnchorSideTop.Control = btnCalculate
         Left = 154
         Height = 25
-        Top = 116
+        Top = 88
         Width = 86
         AutoSize = True
         BorderSpacing.Left = 8
         Caption = 'Save image'
         Enabled = False
-        TabOrder = 6
+        TabOrder = 4
         OnClick = btnSaveImageClick
-      end
-      object lblBrightestGray: TLabel
-        AnchorSideLeft.Control = gbProcess
-        AnchorSideTop.Control = seBrightestGrayValue
-        AnchorSideTop.Side = asrCenter
-        Left = 8
-        Height = 15
-        Top = 4
-        Width = 104
-        BorderSpacing.Left = 8
-        Caption = 'Brightest gray value'
       end
       object fseBrightnessTransferExponent: TFloatSpinEdit
         AnchorSideLeft.Control = lblBrightnessTransferExponent
         AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = lblNumLines
         AnchorSideTop.Side = asrBottom
         Left = 122
         Height = 23
-        Top = 54
+        Top = 33
         Width = 70
         Alignment = taRightJustify
-        Anchors = [akLeft]
-        BorderSpacing.Top = 4
+        BorderSpacing.Top = 10
         Increment = 0.01
         MaxValue = 999
-        TabOrder = 2
+        TabOrder = 0
         Value = 1
       end
       object lblBrightnessTransferExponent: TLabel
@@ -372,100 +349,44 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrCenter
         Left = 8
         Height = 30
-        Top = 50
+        Top = 29
         Width = 98
         BorderSpacing.Left = 8
         BorderSpacing.Right = 16
         Caption = 'Brightness transfer'#13#10'function exponent'
       end
-      object infoBrightestGrayValue: TLabel
-        AnchorSideLeft.Control = btnUseHighestGrayValue
-        AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = lblBrightestGray
-        AnchorSideTop.Side = asrCenter
-        Left = 227
-        Height = 15
-        Top = 4
-        Width = 3
-        BorderSpacing.Left = 6
-        Caption = ' '
-      end
-      object infoDarkestGrayValue: TLabel
-        AnchorSideLeft.Control = btnUseDarkestGray
-        AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Side = asrCenter
-        Left = 227
-        Height = 15
-        Top = 31
-        Width = 3
-        BorderSpacing.Left = 6
-        Caption = ' '
-      end
-      object seBrightestGrayValue: TFloatSpinEdit
-        AnchorSideLeft.Control = fseBrightnessTransferExponent
-        AnchorSideTop.Control = gbProcess
-        AnchorSideRight.Control = fseBrightnessTransferExponent
+      object ProgressBar: TProgressBar
+        AnchorSideLeft.Control = gbProcess
+        AnchorSideTop.Control = Bevel1
+        AnchorSideRight.Control = gbProcess
         AnchorSideRight.Side = asrBottom
-        Left = 122
-        Height = 23
-        Top = 0
-        Width = 70
-        Alignment = taRightJustify
-        Anchors = [akTop, akLeft, akRight]
-        DecimalPlaces = 3
-        Increment = 0.001
-        MaxValue = 2
-        TabOrder = 0
-        Value = 1
+        AnchorSideBottom.Control = Bevel1
+        AnchorSideBottom.Side = asrBottom
+        Left = 8
+        Height = 16
+        Top = 64
+        Width = 260
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Left = 8
+        BorderSpacing.Right = 8
+        TabOrder = 5
+        Visible = False
       end
-      object seDarkestGrayValue: TFloatSpinEdit
-        AnchorSideLeft.Control = fseBrightnessTransferExponent
-        AnchorSideTop.Control = seBrightestGrayValue
+      object Bevel1: TBevel
+        AnchorSideTop.Control = fseBrightnessTransferExponent
         AnchorSideTop.Side = asrBottom
-        AnchorSideRight.Control = fseBrightnessTransferExponent
-        AnchorSideRight.Side = asrBottom
-        Left = 122
-        Height = 23
-        Top = 27
-        Width = 70
-        Alignment = taRightJustify
-        Anchors = [akTop, akLeft, akRight]
-        BorderSpacing.Top = 4
-        DecimalPlaces = 3
-        Increment = 0.01
-        MaxValue = 1
-        MinValue = -1
-        TabOrder = 1
-      end
-      object btnUseHighestGrayValue: TSpeedButton
-        AnchorSideLeft.Control = seBrightestGrayValue
-        AnchorSideLeft.Side = asrBottom
-        Left = 198
-        Height = 22
-        Top = 2
-        Width = 23
-        BorderSpacing.Left = 6
-        Caption = '<<'
-        OnClick = btnUseHighestGrayValueClick
-      end
-      object btnUseDarkestGray: TSpeedButton
-        AnchorSideLeft.Control = seDarkestGrayValue
-        AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = seDarkestGrayValue
-        AnchorSideTop.Side = asrCenter
-        Left = 198
-        Height = 22
-        Top = 27
-        Width = 23
-        BorderSpacing.Left = 6
-        Caption = '<<'
-        OnClick = btnUseDarkestGrayClick
+        Left = 0
+        Height = 16
+        Top = 64
+        Width = 14
+        BorderSpacing.Top = 8
+        Shape = bsSpacer
       end
     end
     object StatusBar: TStatusBar
       Left = 0
       Height = 23
-      Top = 675
+      Top = 648
       Width = 280
       Panels = <      
         item
@@ -476,34 +397,25 @@ object MainForm: TMainForm
         end>
       SimplePanel = False
     end
-    object ProgressBar: TProgressBar
-      Left = 0
-      Height = 20
-      Top = 655
-      Width = 280
-      Align = alBottom
-      TabOrder = 4
-      Visible = False
-    end
   end
   object PageControl: TPageControl
     Left = 296
-    Height = 714
+    Height = 679
     Top = 0
-    Width = 621
+    Width = 578
     ActivePage = pgConnections
     Align = alClient
     TabIndex = 1
     TabOrder = 1
     object pgImages: TTabSheet
       Caption = 'Images'
-      ClientHeight = 686
-      ClientWidth = 613
+      ClientHeight = 651
+      ClientWidth = 570
       object ScrollBox: TScrollBox
         Left = 0
-        Height = 686
+        Height = 651
         Top = 0
-        Width = 613
+        Width = 570
         HorzScrollBar.Increment = 10
         HorzScrollBar.Page = 100
         HorzScrollBar.Smooth = True
@@ -513,8 +425,8 @@ object MainForm: TMainForm
         VertScrollBar.Smooth = True
         VertScrollBar.Tracking = True
         Align = alClient
-        ClientHeight = 682
-        ClientWidth = 609
+        ClientHeight = 647
+        ClientWidth = 566
         Color = clWindow
         ParentBackground = False
         ParentColor = False
@@ -530,19 +442,19 @@ object MainForm: TMainForm
     end
     object pgConnections: TTabSheet
       Caption = 'Connections'
-      ClientHeight = 686
-      ClientWidth = 613
+      ClientHeight = 651
+      ClientWidth = 570
       object Panel2: TPanel
         Left = 6
         Height = 26
         Top = 6
-        Width = 601
+        Width = 558
         Align = alTop
         AutoSize = True
         BorderSpacing.Around = 6
         BevelOuter = bvNone
         ClientHeight = 26
-        ClientWidth = 601
+        ClientWidth = 558
         TabOrder = 0
         object lblImgDiameter: TLabel
           AnchorSideLeft.Control = Panel2
@@ -570,7 +482,7 @@ object MainForm: TMainForm
           Value = 300
           OnChange = seImgDiameterChange
         end
-        object lblMeters: TLabel
+        object lblMillimeters: TLabel
           AnchorSideLeft.Control = seImgDiameter
           AnchorSideLeft.Side = asrBottom
           AnchorSideTop.Control = seImgDiameter
@@ -588,7 +500,7 @@ object MainForm: TMainForm
           AnchorSideTop.Side = asrCenter
           AnchorSideRight.Control = Panel2
           AnchorSideRight.Side = asrBottom
-          Left = 470
+          Left = 427
           Height = 25
           Top = 1
           Width = 131
@@ -604,7 +516,7 @@ object MainForm: TMainForm
           AnchorSideTop.Control = Panel2
           AnchorSideTop.Side = asrCenter
           AnchorSideRight.Control = btnSaveConnections
-          Left = 314
+          Left = 271
           Height = 25
           Top = 1
           Width = 148
@@ -644,9 +556,9 @@ object MainForm: TMainForm
         AnchorSideBottom.Control = pgConnections
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 602
+        Height = 567
         Top = 84
-        Width = 613
+        Width = 570
         Anchors = [akTop, akLeft, akRight, akBottom]
         BevelOuter = bvNone
         TabOrder = 1

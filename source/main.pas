@@ -23,6 +23,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    Bevel1: TBevel;
     btnReset: TButton;
     btnCalculate: TButton;
     btnSaveImage: TButton;
@@ -31,16 +32,12 @@ type
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
     fseBrightnessTransferExponent: TFloatSpinEdit;
-    infoBrightestGrayValue: TLabel;
-    infoDarkestGrayValue: TLabel;
     lblNailDistance: TLabel;
-    lblBrightestGray: TLabel;
     lblBrightnessTransferExponent: TLabel;
-    lblMeters: TLabel;
+    lblMillimeters: TLabel;
     lblWireLength: TLabel;
     Panel3: TPanel;
     ProgressBar: TProgressBar;
-    seBrightestGrayValue: TFloatSpinEdit;
     seImgDiameter: TFloatSpinEdit;
     gbImgSelection: TGroupBox;
     gbImgPreparation: TGroupBox;
@@ -51,26 +48,22 @@ type
     OrigImage: TImage;
     Label1: TLabel;
     lblImgSize: TLabel;
-    lblDarkestGray: TLabel;
     lblNumNails: TLabel;
     PageControl: TPageControl;
     PaintBox: TPaintBox;
-    Panel1: TPanel;
+    ParamsPanel: TPanel;
     Panel2: TPanel;
     rbGrayscale: TRadioButton;
     rbMonochrome: TRadioButton;
     SaveDialog: TSaveDialog;
     SavePictureDialog: TSavePictureDialog;
     ScrollBox: TScrollBox;
-    seDarkestGrayValue: TFloatSpinEdit;
     seNumNails: TSpinEdit;
     seNumLines: TSpinEdit;
     btnBrowse: TSpeedButton;
     btnOpen: TSpeedButton;
     pgImages: TTabSheet;
     pgConnections: TTabSheet;
-    btnUseHighestGrayValue: TSpeedButton;
-    btnUseDarkestGray: TSpeedButton;
     StatusBar: TStatusBar;
     TrackBar: TTrackBar;
     procedure btnBrowseClick(Sender: TObject);
@@ -80,14 +73,13 @@ type
     procedure btnSaveConnectionsClick(Sender: TObject);
     procedure btnSaveHardwareImageClick(Sender: TObject);
     procedure btnSaveImageClick(Sender: TObject);
-    procedure btnUseDarkestGrayClick(Sender: TObject);
-    procedure btnUseHighestGrayValueClick(Sender: TObject);
     procedure cbFileNamesChange(Sender: TObject);
     procedure cbFileNamesCloseUp(Sender: TObject);
     procedure cbFileNamesDropDown(Sender: TObject);
     procedure cbShowOrigImgChange(Sender: TObject);
     procedure cgDisplayItemClick(Sender: TObject; {%H-}Index: integer);
     procedure cgIncludeInListItemClick(Sender: TObject; Index: integer);
+    procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure PaintBoxPaint(Sender: TObject);
@@ -105,6 +97,7 @@ type
     FLastNail: Integer;
     FPaintboxMargin: TSize;
     FConnectionGrid: TMCStringGrid;
+    FActivated: Boolean;
 
     function GetAverageLineGray(AImage: TFPCustomImage; ANail1, ANail2, ALineWidth: Integer): Double;
     procedure GetThickLineGray(AImage: TFPCustomImage;
@@ -134,7 +127,6 @@ type
     procedure UpdateBtnStates;
     procedure UpdateCaption;
     procedure UpdateConnectionList;
-    procedure UpdateContrastInfo(AImage: TFPCustomImage);
     procedure UpdateMaxLineCount;
     procedure UpdateNailDistance;
     procedure UpdateResultsPage;
@@ -321,16 +313,6 @@ begin
   end;
 end;
 
-procedure TMainForm.btnUseDarkestGrayClick(Sender: TObject);
-begin
-  seDarkestGrayValue.Value := StrToFloat(infoDarkestGrayValue.Caption);
-end;
-
-procedure TMainForm.btnUseHighestGrayValueClick(Sender: TObject);
-begin
-  seBrightestGrayValue.Value := StrToFloat(infoBrightestGrayValue.Caption);
-end;
-
 procedure TMainForm.cbFileNamesChange(Sender: TObject);
 begin
   btnOpen.Enabled := (cbFileNames.Text <> '');
@@ -381,6 +363,23 @@ end;
 procedure TMainForm.cgIncludeInListItemClick(Sender: TObject; Index: integer);
 begin
   UpdateConnectionList;
+end;
+
+procedure TMainForm.FormActivate(Sender: TObject);
+begin
+  if not FActivated then
+  begin
+    Constraints.MinWidth := lblMillimeters.Left + lblMillimeters.Width +
+      btnSaveHardwareImage.Width + btnSaveConnections.Width + 3*btnSaveConnections.BorderSpacing.Left +
+      2*Panel2.BorderSpacing.Around + PageControl.Left;
+    if Width < Constraints.MinWidth then
+      Width := 0;
+    Constraints.MinHeight := gbProcess.Top + gbProcess.Height +
+      2*ParamsPanel.BorderSpacing.Top + StatusBar.Height;
+    if Height < Constraints.MinHeight then
+      Height := 0;
+    FActivated := true;
+  end;
 end;
 
 procedure TMainForm.DrawStringImg(ACanvas: TCanvas;
@@ -610,22 +609,12 @@ end;
 
 procedure TMainForm.GetThinLineGray(AImage: TFPCustomImage;
   x1, y1, x2, y2: Integer; var ASum: Double; var ACount: Integer);
-var
-  minGray, maxGray: Double;
 
   function GetPixelGray(x, y: Integer): Double;
-  var
-    gray: Double;
   begin
     x := EnsureRange(x, 0, AImage.Width-1);
     y := EnsureRange(y, 0, AImage.Height-1);
-    gray := AImage.Colors[x, y].Red / word($FFFF);  // We have grayscale, i.e. Red is ok
-    if (minGray <> 0.0) or (maxGray <> 1.0) then
-    begin
-      gray := (gray - minGray) / (maxGray - minGray);
-      gray := EnsureRange(gray, 0.0, 1.0);
-    end;
-    Result := gray;
+    Result := AImage.Colors[x, y].Red / word($FFFF);  // We have grayscale, i.e. Red is ok
   end;
 
 var
@@ -672,9 +661,6 @@ var
 var
   x, y, i: Integer;
 begin
-  maxGray := seBrightestGrayValue.Value;
-  minGray := seDarkestGrayValue.Value;
-
   InitLine(x1, y1, x2, y2);
   x := x1;
   y := y1;
@@ -795,7 +781,6 @@ begin
 
   MakeWorkImage(FWorkImg);
   FWorkCanvas := TLazCanvas.Create(FWorkImg);
-  UpdateContrastInfo(FWorkImg);
 
   InitNails(seNumNails.Value);
   AddToFileHistory(AFileName);
@@ -1017,14 +1002,6 @@ begin
     cgDisplay.Checked[SHOW_ORIG_IMAGE]   := ini.ReadBool('Parameters', 'Display OrigImage', false);
     cgDisplay.Checked[SHOW_WORK_IMAGE]   := ini.ReadBool('Parameters', 'Display WorkImage', false);
 
-    s := ini.ReadString('Parameters', 'MaxGray', '');
-    if TryStrToFloat(s, x, fs) then
-      seBrightestGrayValue.Value := x;
-
-    s := ini.ReadString('Parameters', 'MinGray', '');
-    if TryStrToFloat(s, x, fs) then
-      seDarkestGrayValue.Value := x;
-
     s := ini.ReadString('Parameters', 'BrightnessTransferExponent', '');
     if TryStrToFloat(s, x,fs ) then
       fseBrightnessTransferExponent.Value := x;
@@ -1217,29 +1194,6 @@ begin
   end;
 end;
 
-procedure TMainForm.UpdateContrastInfo(AImage: TFPCustomImage);
-const
-  MAX_WORD = $FFFF;
-var
-  x, y: Integer;
-  mn, mx: Word;
-  gray: word;
-begin
-  mn := MAX_WORD;
-  mx := 0;
-  for y := 0 to AImage.Height-1 do
-    for x := 0 to AImage.Width-1 do
-    begin
-      gray := FPImage.CalculateGray(AImage.Colors[x,y]);
-      if gray = 0 then
-        gray := gray+1-1;
-      mn := Min(mn, gray);
-      mx := Max(mx, gray);
-    end;
-  infoBrightestGrayValue.Caption := Format('%.3f', [mx / MAX_WORD]);
-  infoDarkestGrayValue.Caption := Format('%.3f', [mn / MAX_WORD]);
-end;
-
 procedure TMainForm.UpdateMaxLineCount;
 var
   n: Integer;
@@ -1343,8 +1297,6 @@ begin
     ini.WriteBool('Parameters', 'Display Nails', cgDisplay.Checked[SHOW_NAILS]);
     ini.WriteBool('Parameters', 'Display OrigImage', cgDisplay.Checked[SHOW_ORIG_IMAGE]);
     ini.WriteBool('Parameters', 'Display WorkImage', cgDisplay.Checked[SHOW_WORK_IMAGE]);
-    ini.WriteString('Parameters', 'MaxGray', FormatFloat('0.000', seBrightestGrayValue.Value, fs));
-    ini.WriteString('Parameters', 'MinGray', FormatFloat('0.000', seDarkestGrayValue.Value, fs));
     ini.WriteString('Parameters', 'BrightnessTransferExponent', FormatFloat('0.00', fseBrightnessTransferExponent.Value, fs));
     ini.WriteInteger('Parameters', 'NumLines', seNumLines.Value);
     ini.WriteString('Parameters', 'ImageDiameter', FormatFloat('0.00', seImgDiameter.Value, fs));
