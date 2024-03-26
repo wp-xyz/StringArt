@@ -36,7 +36,7 @@ type
     lblBrightnessTransferExponent: TLabel;
     lblMillimeters: TLabel;
     lblWireLength: TLabel;
-    Panel3: TPanel;
+    ConnectionsGridPanel: TPanel;
     ProgressBar: TProgressBar;
     seImgDiameter: TFloatSpinEdit;
     gbImgSelection: TGroupBox;
@@ -52,7 +52,7 @@ type
     PageControl: TPageControl;
     PaintBox: TPaintBox;
     ParamsPanel: TPanel;
-    Panel2: TPanel;
+    ConnectionsHeaderPanel: TPanel;
     rbGrayscale: TRadioButton;
     rbMonochrome: TRadioButton;
     SaveDialog: TSaveDialog;
@@ -207,6 +207,15 @@ end;
 
 { Set font style of Groupbox caption to bold, but keep items normal }
 procedure BoldGroup(AControl: TCustomGroupBox);
+var
+  i: Integer;
+begin
+  AControl.Font.Style := [fsBold];
+  for i:=0 to AControl.ControlCount-1 do
+    AControl.Controls[i].Font.Style := [];
+end;
+
+procedure BoldTabs(AControl: TPageControl);
 var
   i: Integer;
 begin
@@ -371,7 +380,7 @@ begin
   begin
     Constraints.MinWidth := lblMillimeters.Left + lblMillimeters.Width +
       btnSaveHardwareImage.Width + btnSaveConnections.Width + 3*btnSaveConnections.BorderSpacing.Left +
-      2*Panel2.BorderSpacing.Around + PageControl.Left;
+      2*ConnectionsHeaderPanel.BorderSpacing.Around + PageControl.Left;
     if Width < Constraints.MinWidth then
       Width := 0;
     Constraints.MinHeight := gbProcess.Top + gbProcess.Height +
@@ -497,6 +506,7 @@ begin
   PageControl.TabIndex := 0;
   cgDisplay.Checked[SHOW_STRING_IMAGE] := true;
 
+  BoldTabs(PageControl);
   BoldGroup(gbImgSelection);
   BoldGroup(gbImgPreparation);
   BoldGroup(cgDisplay);
@@ -507,10 +517,11 @@ begin
   Paintbox.Height := 0;
 
   FConnectionGrid := TMCStringGrid.Create(self);
-  FConnectionGrid.Parent := Panel3;
+  FConnectionGrid.Parent := ConnectionsGridPanel;
   FConnectionGrid.Align := alClient;
   FConnectionGrid.MouseWheelOption := mwGrid;
   FConnectionGrid.Options := FConnectionGrid.Options + [goColSpanning, goThumbTracking];
+  FConnectionGrid.TitleStyle := tsNative;
   FConnectionGrid.OnPrepareCanvas := @GridPrepareCanvasHandler;
   FConnectionGrid.OnMergeCells := @GridMergeCellsHandler;
   FConnectionGrid.ColCount := 8;
@@ -1126,7 +1137,10 @@ end;
 procedure TMainForm.TrackBarChange(Sender: TObject);
 begin
   if rbMonochrome.Checked then
+  begin
     MakeMonochrome(FWorkImg);
+    Paintbox.Invalidate;
+  end;
 end;
 
 procedure TMainForm.UpdateBtnStates;
@@ -1234,7 +1248,7 @@ begin
   if FUsedNails.Count <= 1 then
     Statusbar.Panels[0].Text := ''
   else
-    StatusBar.Panels[0].Text := Format('Total: %d lines', [FUsedNails.Count-1]);
+    StatusBar.Panels[0].Text := Format('Total: %%.0n lines', [1.0*(FUsedNails.Count-1)]);
 end;
 
 procedure TMainForm.UpdateWirelength;
