@@ -623,9 +623,10 @@ procedure TMainForm.GetThinLineGray(AImage: TFPCustomImage;
 
   function GetPixelGray(x, y: Integer): Double;
   begin
-    x := EnsureRange(x, 0, AImage.Width-1);
-    y := EnsureRange(y, 0, AImage.Height-1);
-    Result := AImage.Colors[x, y].Red / word($FFFF);  // We have grayscale, i.e. Red is ok
+    if (x < 0) or (x >= AImage.Width) or (y < 0) or (y >= AImage.Height) then
+      Result := 1.0
+    else
+      Result := AImage.Colors[x, y].Red / word($FFFF);  // We have grayscale, i.e. Red is ok
   end;
 
 var
@@ -1248,7 +1249,7 @@ begin
   if FUsedNails.Count <= 1 then
     Statusbar.Panels[0].Text := ''
   else
-    StatusBar.Panels[0].Text := Format('Total: %%.0n lines', [1.0*(FUsedNails.Count-1)]);
+    StatusBar.Panels[0].Text := Format('Total: %.0n lines', [1.0*(FUsedNails.Count-1)]);
 end;
 
 procedure TMainForm.UpdateWirelength;
