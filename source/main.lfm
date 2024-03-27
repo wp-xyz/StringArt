@@ -34,7 +34,7 @@ object MainForm: TMainForm
       ClientHeight = 225
       ClientWidth = 276
       TabOrder = 0
-      object Label1: TLabel
+      object lblFileName: TLabel
         AnchorSideLeft.Control = gbImgSelection
         AnchorSideTop.Control = gbImgSelection
         Left = 12
@@ -47,7 +47,7 @@ object MainForm: TMainForm
       end
       object cbFileNames: TComboBox
         AnchorSideLeft.Control = gbImgSelection
-        AnchorSideTop.Control = Label1
+        AnchorSideTop.Control = lblFileName
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = btnBrowse
         Left = 8
@@ -403,13 +403,13 @@ object MainForm: TMainForm
     Height = 667
     Top = 8
     Width = 574
-    ActivePage = pgImages
+    ActivePage = pgConnections
     Align = alClient
     BorderSpacing.Left = 8
     BorderSpacing.Top = 8
     BorderSpacing.Right = 4
     BorderSpacing.Bottom = 4
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 1
     object pgImages: TTabSheet
       Caption = 'Images'

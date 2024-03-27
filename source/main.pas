@@ -46,7 +46,7 @@ type
     lblImgDiameter: TLabel;
     OpenPictureDialog: TOpenPictureDialog;
     OrigImage: TImage;
-    Label1: TLabel;
+    lblFileName: TLabel;
     lblImgSize: TLabel;
     lblNumNails: TLabel;
     PageControl: TPageControl;
@@ -78,7 +78,7 @@ type
     procedure cbFileNamesDropDown(Sender: TObject);
     procedure cbShowOrigImgChange(Sender: TObject);
     procedure cgDisplayItemClick(Sender: TObject; {%H-}Index: integer);
-    procedure cgIncludeInListItemClick(Sender: TObject; Index: integer);
+    procedure cgIncludeInListItemClick(Sender: TObject; {%H-}Index: integer);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -98,6 +98,8 @@ type
     FPaintboxMargin: TSize;
     FConnectionGrid: TMCStringGrid;
     FActivated: Boolean;
+    FAborted: Boolean;
+    FCalculating: Boolean;
 
     function GetAverageLineGray(AImage: TFPCustomImage; ANail1, ANail2, ALineWidth: Integer): Double;
     procedure GetThickLineGray(AImage: TFPCustomImage;
@@ -109,9 +111,10 @@ type
     procedure AddToFileHistory(const AFileName: String);
     procedure DrawNails(AOffset: TPoint);
     procedure DrawStringImg(ACanvas: TCanvas; const ANailPos: TDoublePointArray; AOffset: TPoint);
+    procedure EnableDisableControls(AEnable: Boolean);
     function FindDarkestLine(AImage: TFPCustomImage; ANail1: Integer; var ANail2: Integer): Boolean;
     procedure GridMergeCellsHandler(Sender: TObject; ACol, ARow: Integer; var ALeft, ATop, ARight, ABottom: Integer);
-    procedure GridPrepareCanvasHandler(Sender: TObject; ACol, ARow: Integer; AState: TGridDrawState);
+    procedure GridPrepareCanvasHandler(Sender: TObject; {%H-}ACol, {%H-}ARow: Integer; {%H-}AState: TGridDrawState);
     procedure InitNails(ACount: Integer);
     procedure InitNails(ACount: Integer; ADiameter: Double; var ANailPos: TDoublePointArray);
     procedure LoadImage(const AFileName: String);
@@ -162,12 +165,12 @@ const
 type
   TBrightnessTransferFunction = function(x, y: Double): Double;
 
-function LinearTransferFunction(x, y: double): Double;
+function LinearTransferFunction(x, {%H-}y: double): Double;
 begin
   Result := x;
 end;
 
-function SqrtTransferFunction(x, y: Double): Double;
+function SqrtTransferFunction(x, {%H-}y: Double): Double;
 begin
   Result := sqrt(x);
 end;
@@ -264,13 +267,12 @@ end;
 
 procedure TMainForm.btnCalculateClick(Sender: TObject);
 begin
-  Progressbar.Position := 0;
-  Progressbar.Max := seNumLines.Value-1;
-  Progressbar.Visible := true;
-  try
+  if FCalculating then
+    FAborted := true
+  else
+  begin
+    FAborted := false;
     Process(seNumLines.Value);
-  finally
-    Progressbar.Hide;
   end;
 end;
 
@@ -473,6 +475,35 @@ begin
   end;
 end;
 
+procedure TMainForm.EnableDisableControls(AEnable: Boolean);
+begin
+  cbFilenames.Enabled := AEnable;
+  lblFileName.Enabled := AEnable;
+  btnBrowse.Enabled := AEnable;
+  btnOpen.Enabled := AEnable;
+
+  seNumNails.Enabled := AEnable;
+  lblNumNails.Enabled := AEnable;
+
+  rbGrayscale.Enabled := AEnable;
+  rbMonochrome.Enabled := AEnable;
+  Trackbar.Enabled := AEnable and rbMonochrome.Checked;
+
+  seNumLines.Enabled := AEnable;
+  lblNumLines.Enabled := AEnable;
+  fseBrightnessTransferExponent.Enabled := AEnable;
+  lblBrightnessTransferExponent.Enabled := AEnable;
+
+  seImgDiameter.Enabled := AEnable;
+  lblImgDiameter.Enabled := AEnable;
+  lblMillimeters.Enabled := AEnable;
+
+  btnReset.Enabled := AEnable;
+  btnSaveImage.Enabled := AEnable and (FUsedNails.Count > 1);
+  btnSaveHardwareImage.Enabled := btnSaveImage.Enabled;
+  btnSaveConnections.Enabled := btnSaveImage.Enabled;
+end;
+
 function TMainForm.FindDarkestLine(AImage: TFPCustomImage;
   ANail1: Integer; var ANail2: Integer): Boolean;
 var
@@ -495,7 +526,7 @@ begin
     end;
   end;
   ANail2 := nailForDarkestLine;
-  Result := nailForDarkestLine > -1;
+  Result := (nailForDarkestLine > -1) and (darkestGray < 1.000);
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -676,19 +707,19 @@ begin
   InitLine(x1, y1, x2, y2);
   x := x1;
   y := y1;
-  for i := 0 to nPixels-1 do
+  for i := 0 to {%H-}nPixels-1 do
   begin
     ASum := ASum + GetPixelGray(x, y);
-    if d < 0 then
+    if {%H-}d < 0 then
     begin
-      d := d + dinc1;
-      x := x + xinc1;
-      y := y + yinc1;
+      d := d + {%H-}dinc1;
+      x := x + {%H-}xinc1;
+      y := y + {%H-}yinc1;
     end else
     begin
-      d := d + dinc2;
-      x := x + xinc2;
-      y := y + yinc2;
+      d := d + {%H-}dinc2;
+      x := x + {%H-}xinc2;
+      y := y + {%H-}yinc2;
     end;
   end;
   ACount := ACount + nPixels;
@@ -911,12 +942,21 @@ var
   nail1, nail2: Integer;
   P1, P2: TPoint;
   i: Integer;
+  endReached: Boolean;
 begin
   if FWorkImg = nil then
     exit;
 
-  Screen.Cursor := crHourglass; //BeginWaitCursor;
+//  Screen.Cursor := crHourglass;   // BeginWaitCursor requires Laz 3.0+
+  EnableDisableControls(false);
+  btnCalculate.Caption := 'Abort';
+  FCalculating := True;
+  endReached := false;
   try
+    Progressbar.Position := 0;
+    Progressbar.Max := seNumLines.Value-1;
+    Progressbar.Visible := true;
+
     FWorkCanvas.Pen.FPColor := colWhite;
     FWorkCanvas.Pen.Style := psSolid;
 
@@ -929,24 +969,36 @@ begin
         Progressbar.Repaint;
         UpdateTotalLineCount;
         Application.ProcessMessages;
+        if FAborted then exit;
       end;
 
       nail2 := NextNail(nail1);
-      FindDarkestLine(FWorkImg, nail1, nail2);
-      {%H-}FUsedNails.Add(nail2);
+      if not FindDarkestLine(FWorkImg, nail1, nail2) then
+        endReached := true;
+      FUsedNails.Add(nail2);
       P1 := FNailPos[nail1].Round;
       P2 := FNailPos[nail2].Round;
       FWorkCanvas.Line(P1, P2);
       FLastNail := nail2;
       nail1 := nail2;
+      if endReached then
+        exit;
     end;
+  finally
+    FAborted := false;
+    FCalculating := false;
     Paintbox.Invalidate;
-    UpdateBtnStates;
     UpdateTotalLineCount;
     UpdateResultsPage;
-
-  finally
-    Screen.Cursor := crDefault; //EndWaitCursor;
+    Progressbar.Hide;
+    btnCalculate.Caption := 'Calculate';
+    EnableDisableControls(true);
+    if endReached then
+    begin
+      Application.ProcessMessages;
+      MessageDlg('More iterations do not lead to further improvement of the image.', mtInformation, [mbOk], 0);
+    end;
+//    Screen.Cursor := crDefault;
   end;
 end;
 
