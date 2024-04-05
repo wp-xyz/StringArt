@@ -32,6 +32,7 @@ type
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
     fseBrightnessTransferExponent: TFloatSpinEdit;
+    lblLineWidth: TLabel;
     lblNailDistance: TLabel;
     lblBrightnessTransferExponent: TLabel;
     lblMillimeters: TLabel;
@@ -64,6 +65,7 @@ type
     btnOpen: TSpeedButton;
     pgImages: TTabSheet;
     pgConnections: TTabSheet;
+    seLineWidth: TSpinEdit;
     StatusBar: TStatusBar;
     TrackBar: TTrackBar;
     procedure btnBrowseClick(Sender: TObject);
@@ -153,7 +155,6 @@ uses
 
 const
   MAIN_CAPTION = 'STRING ART';
-  LINE_WIDTH = 1;
   NAIL_RADIUS = 2;
   MAX_HISTORY = 20;
 
@@ -404,7 +405,7 @@ begin
 
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := clBlack;
-  ACanvas.Pen.Width := 1; //LINE_WIDTH;
+  ACanvas.Pen.Width := seLineWidth.Value;
   P := ANailPos[FUsedNails{%H-}[0]].Round + AOffset;
   ACanvas.MoveTo(P);
   for i := 1 to FUsedNails.Count-1 do
@@ -507,10 +508,11 @@ end;
 function TMainForm.FindDarkestLine(AImage: TFPCustomImage;
   ANail1: Integer; var ANail2: Integer): Boolean;
 var
-  nail2, nailForDarkestLine: Integer;
+  nail2, nailForDarkestLine, lineWidth: Integer;
   gray, darkestGray: Double;
   i: Integer;
 begin
+  lineWidth := seLineWidth.Value;
   nailForDarkestLine := -1;
   darkestGray := MaxDouble;
   for i := 0 to High(FNailPos) do
@@ -518,7 +520,7 @@ begin
     nail2 := NextNail(ANail2, i);
     if nail2 = ANail1 then
       continue;
-    gray := GetAverageLineGray(AImage, ANail1, nail2, LINE_WIDTH);
+    gray := GetAverageLineGray(AImage, ANail1, nail2, lineWidth);
     if gray < darkestGray then
     begin
       darkestGray := gray;
@@ -959,6 +961,7 @@ begin
 
     FWorkCanvas.Pen.FPColor := colWhite;
     FWorkCanvas.Pen.Style := psSolid;
+    FWorkCanvas.Pen.Width := seLineWidth.Value;
 
     nail1 := FLastNail;
     for i := 0 to ANumLines - 1 do
@@ -1073,6 +1076,10 @@ begin
     n := ini.ReadInteger('Parameters', 'NumLines', seNumLines.Value);
     if n > 0 then
       seNumLines.Value := n;
+
+    n := ini.ReadInteger('Parameters', 'LineWidth', seLineWidth.Value);
+    if n > 0 then
+      seLineWidth.Value := n;
 
     s := ini.ReadString('Parameters', 'ImageDiameter', '');
     if TryStrToFloat(s, x, fs) then
@@ -1216,6 +1223,7 @@ const
   FMT = '0.00';
 var
   i, r: Integer;
+  lineWidth: Integer;
   diam: Double;
   gray: Double;
   factor: Double;
@@ -1226,6 +1234,7 @@ begin
     FConnectionGrid.RowCount := 2
   else
   begin
+    lineWidth := seLineWidth.Value;
     diam := seImgDiameter.Value;
     factor := diam / FWorkImg.Width;
     FConnectionGrid.BeginUpdate;
@@ -1249,7 +1258,7 @@ begin
         P.Y := P.Y * factor;
         FConnectionGrid.Cells[5, r] := FormatFloat(FMT, P.X);
         FConnectionGrid.Cells[6, r] := FormatFloat(FMT, P.Y);
-        gray := GetAverageLineGray(img, FUsedNails[i-1], FUsedNails[i], LINE_WIDTH);
+        gray := GetAverageLineGray(img, FUsedNails[i-1], FUsedNails[i], lineWidth);
         FConnectionGrid.Cells[7, r] := FormatFloat('0.000', gray);
         Pprev := P;
         inc(r);
@@ -1366,6 +1375,7 @@ begin
     ini.WriteBool('Parameters', 'Display WorkImage', cgDisplay.Checked[SHOW_WORK_IMAGE]);
     ini.WriteString('Parameters', 'BrightnessTransferExponent', FormatFloat('0.00', fseBrightnessTransferExponent.Value, fs));
     ini.WriteInteger('Parameters', 'NumLines', seNumLines.Value);
+    ini.WriteInteger('Parameters', 'LineWidth', seLineWidth.Value);
     ini.WriteString('Parameters', 'ImageDiameter', FormatFloat('0.00', seImgDiameter.Value, fs));
 
     ini.EraseSection('RecentlyUsed');

@@ -120,14 +120,14 @@ object MainForm: TMainForm
     end
     object gbImgPreparation: TGroupBox
       Left = 0
-      Height = 105
+      Height = 132
       Top = 257
       Width = 280
       Align = alTop
       AutoSize = True
       BorderSpacing.Top = 12
       Caption = 'Preparation'
-      ClientHeight = 85
+      ClientHeight = 112
       ClientWidth = 276
       TabOrder = 1
       object lblNumNails: TLabel
@@ -158,11 +158,11 @@ object MainForm: TMainForm
       end
       object rbGrayscale: TRadioButton
         AnchorSideLeft.Control = gbImgPreparation
-        AnchorSideTop.Control = seNumNails
+        AnchorSideTop.Control = seLineWidth
         AnchorSideTop.Side = asrBottom
         Left = 8
         Height = 19
-        Top = 35
+        Top = 62
         Width = 126
         BorderSpacing.Left = 8
         BorderSpacing.Top = 12
@@ -178,7 +178,7 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 8
         Height = 19
-        Top = 54
+        Top = 81
         Width = 150
         BorderSpacing.Left = 8
         Caption = 'Convert to monochrome'
@@ -191,7 +191,7 @@ object MainForm: TMainForm
         AnchorSideTop.Control = rbMonochrome
         Left = 174
         Height = 25
-        Top = 54
+        Top = 81
         Width = 92
         Frequency = 32
         Max = 255
@@ -203,11 +203,39 @@ object MainForm: TMainForm
         Enabled = False
         TabOrder = 3
       end
+      object seLineWidth: TSpinEdit
+        AnchorSideLeft.Control = seNumNails
+        AnchorSideTop.Control = seNumNails
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = seNumNails
+        AnchorSideRight.Side = asrBottom
+        Left = 101
+        Height = 23
+        Top = 27
+        Width = 70
+        Alignment = taRightJustify
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 4
+        MaxValue = 1000
+        MinValue = 1
+        TabOrder = 4
+        Value = 1
+      end
+      object lblLineWidth: TLabel
+        AnchorSideLeft.Control = lblNumNails
+        AnchorSideTop.Control = seLineWidth
+        AnchorSideTop.Side = asrCenter
+        Left = 8
+        Height = 15
+        Top = 31
+        Width = 55
+        Caption = 'Line width'
+      end
     end
     object cgDisplay: TCheckGroup
       Left = 0
       Height = 70
-      Top = 374
+      Top = 401
       Width = 280
       Align = alTop
       AutoFill = True
@@ -241,7 +269,7 @@ object MainForm: TMainForm
     object gbProcess: TGroupBox
       Left = 0
       Height = 141
-      Top = 456
+      Top = 483
       Width = 280
       Align = alTop
       AutoSize = True
