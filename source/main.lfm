@@ -231,6 +231,17 @@ object MainForm: TMainForm
         Width = 55
         Caption = 'Line width'
       end
+      object lblPixels: TLabel
+        AnchorSideLeft.Control = seLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = lblLineWidth
+        Left = 177
+        Height = 15
+        Top = 31
+        Width = 30
+        BorderSpacing.Left = 6
+        Caption = 'pixels'
+      end
     end
     object cgDisplay: TCheckGroup
       Left = 0
@@ -478,14 +489,14 @@ object MainForm: TMainForm
       ClientWidth = 566
       object ConnectionsHeaderPanel: TPanel
         Left = 6
-        Height = 26
+        Height = 50
         Top = 6
         Width = 554
         Align = alTop
         AutoSize = True
         BorderSpacing.Around = 6
         BevelOuter = bvNone
-        ClientHeight = 26
+        ClientHeight = 50
         ClientWidth = 554
         TabOrder = 0
         object lblImgDiameter: TLabel
@@ -494,7 +505,7 @@ object MainForm: TMainForm
           AnchorSideTop.Side = asrCenter
           Left = 0
           Height = 15
-          Top = 6
+          Top = 4
           Width = 160
           BorderSpacing.Right = 8
           Caption = 'Diameter of "hardware" image'
@@ -504,24 +515,23 @@ object MainForm: TMainForm
           AnchorSideLeft.Control = lblImgDiameter
           AnchorSideLeft.Side = asrBottom
           AnchorSideTop.Control = ConnectionsHeaderPanel
-          AnchorSideTop.Side = asrCenter
           Left = 168
           Height = 23
-          Top = 2
+          Top = 0
           Width = 66
           Alignment = taRightJustify
           TabOrder = 0
           Value = 300
           OnChange = seImgDiameterChange
         end
-        object lblMillimeters: TLabel
+        object lblMillimeters1: TLabel
           AnchorSideLeft.Control = seImgDiameter
           AnchorSideLeft.Side = asrBottom
           AnchorSideTop.Control = seImgDiameter
           AnchorSideTop.Side = asrCenter
           Left = 238
           Height = 15
-          Top = 6
+          Top = 4
           Width = 22
           BorderSpacing.Left = 4
           Caption = 'mm'
@@ -534,7 +544,7 @@ object MainForm: TMainForm
           AnchorSideRight.Side = asrBottom
           Left = 423
           Height = 25
-          Top = 1
+          Top = 13
           Width = 131
           Anchors = [akTop, akRight]
           AutoSize = True
@@ -550,13 +560,57 @@ object MainForm: TMainForm
           AnchorSideRight.Control = btnSaveConnections
           Left = 267
           Height = 25
-          Top = 1
+          Top = 13
           Width = 148
           Anchors = [akTop, akRight]
           AutoSize = True
           Caption = 'Save "hardware" image'
           TabOrder = 1
           OnClick = btnSaveHardwareImageClick
+        end
+        object lblRealLineWidth: TLabel
+          AnchorSideTop.Control = seRealLineWidth
+          AnchorSideTop.Side = asrCenter
+          AnchorSideRight.Control = seRealLineWidth
+          Left = 73
+          Height = 15
+          Top = 31
+          Width = 87
+          Anchors = [akTop, akRight]
+          BorderSpacing.Right = 8
+          Caption = '"Real" line width'
+          ParentColor = False
+        end
+        object seRealLineWidth: TFloatSpinEdit
+          AnchorSideLeft.Control = seImgDiameter
+          AnchorSideTop.Control = seImgDiameter
+          AnchorSideTop.Side = asrBottom
+          AnchorSideRight.Control = seImgDiameter
+          AnchorSideRight.Side = asrBottom
+          Left = 168
+          Height = 23
+          Top = 27
+          Width = 66
+          Alignment = taRightJustify
+          Anchors = [akTop, akLeft, akRight]
+          BorderSpacing.Top = 4
+          MaxValue = 99999
+          TabOrder = 3
+          Value = 0.1
+          OnChange = seImgDiameterChange
+        end
+        object lblMillimeters2: TLabel
+          AnchorSideLeft.Control = seRealLineWidth
+          AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = seRealLineWidth
+          AnchorSideTop.Side = asrCenter
+          Left = 238
+          Height = 15
+          Top = 31
+          Width = 22
+          BorderSpacing.Left = 4
+          Caption = 'mm'
+          ParentColor = False
         end
       end
       object lblWireLength: TLabel
@@ -565,7 +619,7 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 6
         Height = 15
-        Top = 57
+        Top = 81
         Width = 104
         BorderSpacing.Top = 4
         Caption = 'Total length of wire:'
@@ -577,7 +631,7 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 6
         Height = 15
-        Top = 38
+        Top = 62
         Width = 123
         Caption = 'Distance between nails:'
       end

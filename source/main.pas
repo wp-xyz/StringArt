@@ -32,10 +32,13 @@ type
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
     fseBrightnessTransferExponent: TFloatSpinEdit;
+    lblPixels: TLabel;
+    lblRealLineWidth: TLabel;
     lblLineWidth: TLabel;
+    lblMillimeters2: TLabel;
     lblNailDistance: TLabel;
     lblBrightnessTransferExponent: TLabel;
-    lblMillimeters: TLabel;
+    lblMillimeters1: TLabel;
     lblWireLength: TLabel;
     ConnectionsGridPanel: TPanel;
     ProgressBar: TProgressBar;
@@ -59,6 +62,7 @@ type
     SaveDialog: TSaveDialog;
     SavePictureDialog: TSavePictureDialog;
     ScrollBox: TScrollBox;
+    seRealLineWidth: TFloatSpinEdit;
     seNumNails: TSpinEdit;
     seNumLines: TSpinEdit;
     btnBrowse: TSpeedButton;
@@ -112,7 +116,7 @@ type
   protected
     procedure AddToFileHistory(const AFileName: String);
     procedure DrawNails(AOffset: TPoint);
-    procedure DrawStringImg(ACanvas: TCanvas; const ANailPos: TDoublePointArray; AOffset: TPoint);
+    procedure DrawStringImg(ACanvas: TCanvas; const ANailPos: TDoublePointArray; AOffset: TPoint; ALineWidth: Integer);
     procedure EnableDisableControls(AEnable: Boolean);
     function FindDarkestLine(AImage: TFPCustomImage; ANail1: Integer; var ANail2: Integer): Boolean;
     procedure GridMergeCellsHandler(Sender: TObject; ACol, ARow: Integer; var ALeft, ATop, ARight, ABottom: Integer);
@@ -381,7 +385,7 @@ procedure TMainForm.FormActivate(Sender: TObject);
 begin
   if not FActivated then
   begin
-    Constraints.MinWidth := lblMillimeters.Left + lblMillimeters.Width +
+    Constraints.MinWidth := lblMillimeters1.Left + lblMillimeters1.Width +
       btnSaveHardwareImage.Width + btnSaveConnections.Width + 3*btnSaveConnections.BorderSpacing.Left +
       2*ConnectionsHeaderPanel.BorderSpacing.Around + PageControl.Left;
     if Width < Constraints.MinWidth then
@@ -395,7 +399,7 @@ begin
 end;
 
 procedure TMainForm.DrawStringImg(ACanvas: TCanvas;
-  const ANailPos: TDoublePointArray; AOffset: TPoint);
+  const ANailPos: TDoublePointArray; AOffset: TPoint; ALineWidth: Integer);
 var
   i: Integer;
   P: TPoint;
@@ -405,7 +409,7 @@ begin
 
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := clBlack;
-  ACanvas.Pen.Width := seLineWidth.Value;
+  ACanvas.Pen.Width := ALineWidth;
   P := ANailPos[FUsedNails{%H-}[0]].Round + AOffset;
   ACanvas.MoveTo(P);
   for i := 1 to FUsedNails.Count-1 do
@@ -486,6 +490,10 @@ begin
   seNumNails.Enabled := AEnable;
   lblNumNails.Enabled := AEnable;
 
+  seLineWidth.Enabled := AEnable;
+  lblLineWidth.Enabled := AEnable;
+  lblPixels.Enabled := AEnable;
+
   rbGrayscale.Enabled := AEnable;
   rbMonochrome.Enabled := AEnable;
   Trackbar.Enabled := AEnable and rbMonochrome.Checked;
@@ -497,7 +505,11 @@ begin
 
   seImgDiameter.Enabled := AEnable;
   lblImgDiameter.Enabled := AEnable;
-  lblMillimeters.Enabled := AEnable;
+  lblMillimeters1.Enabled := AEnable;
+
+  seRealLineWidth.Enabled := AEnable;
+  lblRealLineWidth.Enabled := AEnable;
+  lblMillimeters2.Enabled := AEnable;
 
   btnReset.Enabled := AEnable;
   btnSaveImage.Enabled := AEnable and (FUsedNails.Count > 1);
@@ -553,7 +565,7 @@ begin
   FConnectionGrid.Parent := ConnectionsGridPanel;
   FConnectionGrid.Align := alClient;
   FConnectionGrid.MouseWheelOption := mwGrid;
-  FConnectionGrid.Options := FConnectionGrid.Options + [goColSpanning, goThumbTracking];
+  FConnectionGrid.Options := FConnectionGrid.Options + [goColSpanning, goThumbTracking, goRowSelect];
   FConnectionGrid.TitleStyle := tsNative;
   FConnectionGrid.OnPrepareCanvas := @GridPrepareCanvasHandler;
   FConnectionGrid.OnMergeCells := @GridMergeCellsHandler;
@@ -923,7 +935,7 @@ begin
   end;
 
   if cgDisplay.CHECKED[SHOW_STRING_IMAGE] then
-    DrawStringImg(Paintbox.Canvas, FNailPos, TPoint(FPaintboxMargin));
+    DrawStringImg(Paintbox.Canvas, FNailPos, TPoint(FPaintboxMargin), seLineWidth.Value);
 
   if cgDisplay.Checked[SHOW_NAILS] then
     DrawNails(TPoint(FPaintboxMargin));
@@ -1081,6 +1093,10 @@ begin
     if n > 0 then
       seLineWidth.Value := n;
 
+    s := ini.ReadString('Parameters', 'RealLineWidth', '');
+    if TryStrToFloat(s, x, fs) then
+      seRealLineWidth.Value := x;
+
     s := ini.ReadString('Parameters', 'ImageDiameter', '');
     if TryStrToFloat(s, x, fs) then
       seImgDiameter.Value := x;
@@ -1154,6 +1170,7 @@ procedure TMainForm.SaveImage(const AFileName: String; ASize: Double = -1);
 var
   img: TCustomBitmap;
   w, h: Integer;
+  lineWidth: Integer;
   nailPos: TDoublePointArray = nil;
 begin
   img := TPortableNetworkGraphic.Create;
@@ -1162,16 +1179,18 @@ begin
     begin
       w := FOrigImg.Width * 2;
       h := FOrigImg.Height * 2;
+      lineWidth := seLineWidth.Value;
     end else
     begin
       w := mmToPx(ASize, ScreenInfo.PixelsPerInchX);
       h := mmToPx(ASize, ScreenInfo.PixelsPerInchY);
+      lineWidth := Max(1, Round(seRealLineWidth.Value / 25.4 * 96));
     end;
     img.SetSize(w, h);
     img.Canvas.Brush.Color := clWhite;
     img.Canvas.FillRect(0, 0, img.Width, img.Height);
     InitNails(seNumNails.Value, w, nailPos);
-    DrawStringImg(img.Canvas, nailPos, Point(0, 0));
+    DrawStringImg(img.Canvas, nailPos, Point(0, 0), lineWidth);
     img.SaveToFile(AFileName);
   finally
     img.Free;
@@ -1376,6 +1395,7 @@ begin
     ini.WriteString('Parameters', 'BrightnessTransferExponent', FormatFloat('0.00', fseBrightnessTransferExponent.Value, fs));
     ini.WriteInteger('Parameters', 'NumLines', seNumLines.Value);
     ini.WriteInteger('Parameters', 'LineWidth', seLineWidth.Value);
+    ini.WriteString('Parameters', 'RealLineWidth', FormatFloat('0.00', seRealLineWidth.Value, fs));
     ini.WriteString('Parameters', 'ImageDiameter', FormatFloat('0.00', seImgDiameter.Value, fs));
 
     ini.EraseSection('RecentlyUsed');
