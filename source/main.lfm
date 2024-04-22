@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = 314
   Height = 679
   Top = 130
-  Width = 874
+  Width = 990
   Caption = 'String Art'
   ClientHeight = 679
-  ClientWidth = 874
+  ClientWidth = 990
   LCLVersion = '3.99.0.0'
   OnActivate = FormActivate
   OnCreate = FormCreate
@@ -441,7 +441,7 @@ object MainForm: TMainForm
     Left = 296
     Height = 667
     Top = 8
-    Width = 574
+    Width = 690
     ActivePage = pgConnections
     Align = alClient
     BorderSpacing.Left = 8
@@ -453,12 +453,12 @@ object MainForm: TMainForm
     object pgImages: TTabSheet
       Caption = 'Images'
       ClientHeight = 639
-      ClientWidth = 566
+      ClientWidth = 682
       object ScrollBox: TScrollBox
         Left = 0
         Height = 639
         Top = 0
-        Width = 566
+        Width = 682
         HorzScrollBar.Increment = 10
         HorzScrollBar.Page = 100
         HorzScrollBar.Smooth = True
@@ -469,7 +469,7 @@ object MainForm: TMainForm
         VertScrollBar.Tracking = True
         Align = alClient
         ClientHeight = 635
-        ClientWidth = 562
+        ClientWidth = 678
         Color = clWindow
         ParentBackground = False
         ParentColor = False
@@ -486,18 +486,18 @@ object MainForm: TMainForm
     object pgConnections: TTabSheet
       Caption = 'Connections'
       ClientHeight = 639
-      ClientWidth = 566
+      ClientWidth = 682
       object ConnectionsHeaderPanel: TPanel
         Left = 6
-        Height = 50
+        Height = 96
         Top = 6
-        Width = 554
+        Width = 670
         Align = alTop
         AutoSize = True
         BorderSpacing.Around = 6
         BevelOuter = bvNone
-        ClientHeight = 50
-        ClientWidth = 554
+        ClientHeight = 96
+        ClientWidth = 670
         TabOrder = 0
         object lblImgDiameter: TLabel
           AnchorSideLeft.Control = ConnectionsHeaderPanel
@@ -539,12 +539,11 @@ object MainForm: TMainForm
         end
         object btnSaveConnections: TButton
           AnchorSideTop.Control = ConnectionsHeaderPanel
-          AnchorSideTop.Side = asrCenter
           AnchorSideRight.Control = ConnectionsHeaderPanel
           AnchorSideRight.Side = asrBottom
-          Left = 423
+          Left = 539
           Height = 25
-          Top = 13
+          Top = 0
           Width = 131
           Anchors = [akTop, akRight]
           AutoSize = True
@@ -556,11 +555,10 @@ object MainForm: TMainForm
         end
         object btnSaveHardwareImage: TButton
           AnchorSideTop.Control = ConnectionsHeaderPanel
-          AnchorSideTop.Side = asrCenter
           AnchorSideRight.Control = btnSaveConnections
-          Left = 267
+          Left = 383
           Height = 25
-          Top = 13
+          Top = 0
           Width = 148
           Anchors = [akTop, akRight]
           AutoSize = True
@@ -612,44 +610,124 @@ object MainForm: TMainForm
           Caption = 'mm'
           ParentColor = False
         end
-      end
-      object lblNailDistance: TLabel
-        AnchorSideLeft.Control = ConnectionsHeaderPanel
-        AnchorSideTop.Control = ConnectionsHeaderPanel
-        AnchorSideTop.Side = asrBottom
-        Left = 6
-        Height = 15
-        Top = 62
-        Width = 123
-        Caption = 'Distance between nails:'
+        object lblNailDistance: TLabel
+          AnchorSideLeft.Control = ConnectionsHeaderPanel
+          AnchorSideTop.Control = seRealLineWidth
+          AnchorSideTop.Side = asrBottom
+          AnchorSideRight.Control = lblRealLineWidth
+          AnchorSideRight.Side = asrBottom
+          Left = 37
+          Height = 15
+          Top = 54
+          Width = 123
+          Anchors = [akTop, akRight]
+          BorderSpacing.Top = 4
+          Caption = 'Distance between nails:'
+        end
+        object lblWireLength: TLabel
+          AnchorSideLeft.Control = ConnectionsHeaderPanel
+          AnchorSideTop.Control = lblNailDistance
+          AnchorSideTop.Side = asrBottom
+          AnchorSideRight.Control = lblNailDistance
+          AnchorSideRight.Side = asrBottom
+          Left = 56
+          Height = 15
+          Top = 73
+          Width = 104
+          Anchors = [akTop, akRight]
+          BorderSpacing.Top = 4
+          BorderSpacing.Bottom = 8
+          Caption = 'Total length of wire:'
+          ParentColor = False
+        end
+        object infoNailDistance: TLabel
+          AnchorSideTop.Control = lblNailDistance
+          AnchorSideRight.Control = lblMillimeters2
+          AnchorSideRight.Side = asrBottom
+          Left = 173
+          Height = 15
+          Top = 54
+          Width = 87
+          Anchors = [akTop, akRight]
+          Caption = 'infoNailDistance'
+        end
+        object infoWirelength: TLabel
+          AnchorSideTop.Control = lblWireLength
+          AnchorSideRight.Control = seRealLineWidth
+          AnchorSideRight.Side = asrBottom
+          Left = 155
+          Height = 15
+          Top = 73
+          Width = 79
+          Anchors = [akTop, akRight]
+          Caption = 'infoWirelength'
+        end
+        object lblMillimeters3: TLabel
+          AnchorSideLeft.Control = seRealLineWidth
+          AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = infoWirelength
+          AnchorSideTop.Side = asrCenter
+          Left = 238
+          Height = 15
+          Top = 73
+          Width = 11
+          BorderSpacing.Left = 4
+          Caption = 'm'
+          ParentColor = False
+        end
+        object tbEditConnections: TToggleBox
+          AnchorSideLeft.Control = btnSaveHardwareImage
+          AnchorSideRight.Control = btnSaveHardwareImage
+          AnchorSideRight.Side = asrBottom
+          Left = 383
+          Height = 25
+          Top = 29
+          Width = 148
+          Anchors = [akTop, akLeft, akRight]
+          Caption = 'Edit connections'
+          TabOrder = 4
+          OnChange = tbEditConnectionsChange
+        end
       end
       object ConnectionsGridPanel: TPanel
         AnchorSideLeft.Control = pgConnections
-        AnchorSideTop.Control = lblWireLength
+        AnchorSideTop.Control = ConnectionsHeaderPanel
         AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = pgConnections
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = pgConnections
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 535
-        Top = 104
-        Width = 566
+        Height = 531
+        Top = 108
+        Width = 682
         Anchors = [akTop, akLeft, akRight, akBottom]
         BevelOuter = bvNone
+        ClientHeight = 531
+        ClientWidth = 682
         TabOrder = 1
-      end
-      object lblWireLength: TLabel
-        AnchorSideLeft.Control = ConnectionsHeaderPanel
-        AnchorSideTop.Side = asrBottom
-        Left = 6
-        Height = 15
-        Top = 81
-        Width = 104
-        BorderSpacing.Top = 4
-        BorderSpacing.Bottom = 8
-        Caption = 'Total length of wire:'
-        ParentColor = False
+        object EditImage: TImage
+          AnchorSideLeft.Control = Bevel2
+          AnchorSideLeft.Side = asrBottom
+          Left = 346
+          Height = 531
+          Top = 0
+          Width = 336
+          Align = alRight
+          Anchors = [akTop, akLeft, akRight, akBottom]
+          Center = True
+          Visible = False
+          OnResize = EditImageResize
+        end
+        object Bevel2: TBevel
+          AnchorSideLeft.Control = ConnectionsGridPanel
+          AnchorSideLeft.Side = asrCenter
+          Left = 336
+          Height = 25
+          Top = 10
+          Width = 10
+          Shape = bsSpacer
+        end
       end
     end
   end

@@ -6,7 +6,7 @@ unit Main;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, IntegerList,
+  Classes, SysUtils, fgl, IniFiles,
   LCLIntf, LCLType, Graphics, GraphUtil, Types,
   Forms, Controls, Dialogs, ExtCtrls, StdCtrls, ComCtrls, Spin, Buttons, ExtDlgs,
   Grids, mcGrid,
@@ -19,11 +19,26 @@ type
   end;
   TDoublePointArray = array of TDoublePoint;
 
+  TOperation = (opLineTo, opMoveTo);
+
+  TUsedNail = record
+    Index: Integer;
+    Operation: TOperation;
+    class operator = (N1, N2: TUsedNail): Boolean;
+    class operator <> (N1, N2: TUsedNail): Boolean;
+  end;
+
+  TUsedNailList = class(specialize TFPGList<TUsedNail>)
+  public
+    function Add(AIndex: Integer): Integer;
+  end;
+
 type
   { TMainForm }
 
   TMainForm = class(TForm)
     Bevel1: TBevel;
+    Bevel2: TBevel;
     btnReset: TButton;
     btnCalculate: TButton;
     btnSaveImage: TButton;
@@ -32,6 +47,10 @@ type
     cbFileNames: TComboBox;
     cgDisplay: TCheckGroup;
     fseBrightnessTransferExponent: TFloatSpinEdit;
+    EditImage: TImage;
+    infoNailDistance: TLabel;
+    infoWirelength: TLabel;
+    lblMillimeters3: TLabel;
     lblPixels: TLabel;
     lblRealLineWidth: TLabel;
     lblLineWidth: TLabel;
@@ -71,6 +90,7 @@ type
     pgConnections: TTabSheet;
     seLineWidth: TSpinEdit;
     StatusBar: TStatusBar;
+    tbEditConnections: TToggleBox;
     TrackBar: TTrackBar;
     procedure btnBrowseClick(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
@@ -85,6 +105,7 @@ type
     procedure cbShowOrigImgChange(Sender: TObject);
     procedure cgDisplayItemClick(Sender: TObject; {%H-}Index: integer);
     procedure cgIncludeInListItemClick(Sender: TObject; {%H-}Index: integer);
+    procedure EditImageResize(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -93,19 +114,21 @@ type
     procedure rbMonochromeChange(Sender: TObject);
     procedure seImgDiameterChange(Sender: TObject);
     procedure seNumNailsChange(Sender: TObject);
+    procedure tbEditConnectionsChange(Sender: TObject);
     procedure TrackBarChange(Sender: TObject);
   private
     FOrigImg: TLazIntfImage;
     FWorkImg: TLazIntfImage;
     FWorkCanvas: TLazCanvas;
     FNailPos: array of TDoublePoint;
-    FUsedNails: TIntegerList;
-    FLastNail: Integer;
+    FUsedNails: TUsedNailList;
+    FLastNailIndex: Integer;
     FPaintboxMargin: TSize;
     FConnectionGrid: TMCStringGrid;
     FActivated: Boolean;
     FAborted: Boolean;
     FCalculating: Boolean;
+    FEditing: Boolean;
 
     function GetAverageLineGray(AImage: TFPCustomImage; ANail1, ANail2, ALineWidth: Integer): Double;
     procedure GetThickLineGray(AImage: TFPCustomImage;
@@ -115,12 +138,16 @@ type
 
   protected
     procedure AddToFileHistory(const AFileName: String);
+    procedure DrawEditImage(ARow: Integer);
     procedure DrawNails(AOffset: TPoint);
     procedure DrawStringImg(ACanvas: TCanvas; const ANailPos: TDoublePointArray; AOffset: TPoint; ALineWidth: Integer);
     procedure EnableDisableControls(AEnable: Boolean);
     function FindDarkestLine(AImage: TFPCustomImage; ANail1: Integer; var ANail2: Integer): Boolean;
+    procedure GridKeyDownHandler(Sender: TObject; var Key : Word; Shift : TShiftState);
     procedure GridMergeCellsHandler(Sender: TObject; ACol, ARow: Integer; var ALeft, ATop, ARight, ABottom: Integer);
     procedure GridPrepareCanvasHandler(Sender: TObject; {%H-}ACol, {%H-}ARow: Integer; {%H-}AState: TGridDrawState);
+    procedure GridSelectCellHandler(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+
     procedure InitNails(ACount: Integer);
     procedure InitNails(ACount: Integer; ADiameter: Double; var ANailPos: TDoublePointArray);
     procedure LoadImage(const AFileName: String);
@@ -231,6 +258,32 @@ begin
   for i:=0 to AControl.ControlCount-1 do
     AControl.Controls[i].Font.Style := [];
 end;
+
+
+{ TUsedNail }
+
+class operator TUsedNail.=(N1, N2: TUsedNail): Boolean;
+begin
+  Result := N1.Index = N2.Index;
+end;
+
+class operator TUsedNail.<>(N1, N2: TUsedNail): Boolean;
+begin
+  Result := N1.Index <> N2.Index;
+end;
+
+
+{ TUsedNailList }
+
+function TUsedNailList.Add(AIndex: Integer): Integer;
+var
+  nail: TUsedNail;
+begin
+  nail.Index := AIndex;
+  nail.Operation := opLineTo;
+  Result := inherited Add(nail);
+end;
+
 
 { TMainForm }
 
@@ -381,6 +434,12 @@ begin
   UpdateConnectionList;
 end;
 
+procedure TMainForm.EditImageResize(Sender: TObject);
+begin
+  if FEditing then
+    DrawEditImage(FConnectionGrid.Row);
+end;
+
 procedure TMainForm.FormActivate(Sender: TObject);
 begin
   if not FActivated then
@@ -398,11 +457,56 @@ begin
   end;
 end;
 
+procedure TMainForm.DrawEditImage(ARow: Integer);
+var
+  bmp: TBitmap;
+  nailPos: TDoublePointArray = nil;
+  w, h, wImg, linewidth: Integer;
+  dx, dy: Integer;
+  idx: Integer;
+  P: TPoint;
+begin
+  if FUsedNails.Count = 0 then
+    exit;
+
+  w := EditImage.Width;
+  h := EditImage.Height;
+  lineWidth := 1;
+  bmp := TBitmap.Create;
+  try
+    bmp.SetSize(w, h);
+    bmp.Canvas.Brush.Color := clWhite;
+    bmp.Canvas.FillRect(0, 0, bmp.Width, bmp.Height);
+    wImg := Min(w, h);
+    InitNails(seNumNails.Value, wImg, nailPos);
+
+    dx := (w - wImg) div 2;
+    dy := (h - wImg) div 2;
+    DrawStringImg(bmp.Canvas, nailPos, Point(dx, dy), linewidth);
+
+    if (ARow >= FConnectionGrid.FixedRows) then
+    begin
+      bmp.Canvas.Pen.Color := clRed;
+      bmp.Canvas.Pen.Width := 3;
+      idx := ARow - FConnectionGrid.FixedRows + 1;
+      P := nailPos[FUsedNails[idx-1].Index].Round + Point(dx, dy);
+      bmp.Canvas.MoveTo(P);
+      P := nailPos[FUsedNails[idx].Index].Round + Point(dx, dy);
+      bmp.Canvas.LineTo(P);
+    end;
+
+    EditImage.Picture.Bitmap.Assign(bmp);
+  finally
+    bmp.Free;
+  end;
+end;
+
 procedure TMainForm.DrawStringImg(ACanvas: TCanvas;
   const ANailPos: TDoublePointArray; AOffset: TPoint; ALineWidth: Integer);
 var
   i: Integer;
   P: TPoint;
+  nail: TUsedNail;
 begin
   if FUsedNails.Count <= 1 then
     exit;
@@ -410,12 +514,16 @@ begin
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := clBlack;
   ACanvas.Pen.Width := ALineWidth;
-  P := ANailPos[FUsedNails{%H-}[0]].Round + AOffset;
+  P := ANailPos[FUsedNails{%H-}[0].Index].Round + AOffset;
   ACanvas.MoveTo(P);
   for i := 1 to FUsedNails.Count-1 do
   begin
-    P := ANailPos[FUsedNails{%H-}[i]].Round + AOffset;
-    ACanvas.LineTo(P);
+    nail := FUsedNails[i];
+    P := ANailPos[nail.Index].Round + AOffset;
+    case nail.Operation of
+      opMoveTo: ACanvas.MoveTo(P);
+      opLineTo: ACanvas.LineTo(P);
+    end;
   end;
 end;
 
@@ -520,12 +628,13 @@ end;
 function TMainForm.FindDarkestLine(AImage: TFPCustomImage;
   ANail1: Integer; var ANail2: Integer): Boolean;
 var
-  nail2, nailForDarkestLine, lineWidth: Integer;
+  nail2: Integer;
+  nailIndexForDarkestLine, lineWidth: Integer;
   gray, darkestGray: Double;
   i: Integer;
 begin
   lineWidth := seLineWidth.Value;
-  nailForDarkestLine := -1;
+  nailIndexForDarkestLine := -1;
   darkestGray := MaxDouble;
   for i := 0 to High(FNailPos) do
   begin
@@ -536,16 +645,16 @@ begin
     if gray < darkestGray then
     begin
       darkestGray := gray;
-      nailForDarkestLine := nail2;
+      nailIndexForDarkestLine := nail2;
     end;
   end;
-  ANail2 := nailForDarkestLine;
-  Result := (nailForDarkestLine > -1) and (darkestGray < 1.000);
+  ANail2 := nailIndexForDarkestLine;
+  Result := (nailIndexForDarkestLine > -1) and (darkestGray < 1.000);
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
-  FUsedNails := TIntegerList.Create;
+  FUsedNails := TUsedNailList.Create;
 
   Caption := MAIN_CAPTION;
   PageControl.TabIndex := 0;
@@ -567,8 +676,10 @@ begin
   FConnectionGrid.MouseWheelOption := mwGrid;
   FConnectionGrid.Options := FConnectionGrid.Options + [goColSpanning, goThumbTracking, goRowSelect];
   FConnectionGrid.TitleStyle := tsNative;
+  FConnectionGrid.OnKeyDown := @GridKeyDownHandler;
   FConnectionGrid.OnPrepareCanvas := @GridPrepareCanvasHandler;
   FConnectionGrid.OnMergeCells := @GridMergeCellsHandler;
+  FConnectionGrid.OnSelectCell := @GridSelectCellHandler;
   FConnectionGrid.ColCount := 8;
   FConnectionGrid.FixedRows := 2;
   FConnectionGrid.Cells[0, 0] := 'Line' + LineEnding + 'No.';
@@ -739,6 +850,24 @@ begin
   ACount := ACount + nPixels;
 end;
 
+procedure TMainForm.GridKeyDownHandler(Sender: TObject; var Key : Word; Shift : TShiftState);
+var
+  idx: Integer;
+  P: TPoint;
+  nail: TUsedNail;
+begin
+  if Key = VK_DELETE then
+  begin
+    idx := FConnectionGrid.Row - FConnectionGrid.FixedRows + 1;
+    nail := FUsedNails[idx];
+    nail.Operation := opMoveTo;
+    FUsedNails[idx] := nail;
+    DrawEditImage(FConnectionGrid.Row);
+    Key := 0;
+  end;
+  inherited;
+end;
+
 procedure TMainForm.GridMergeCellsHandler(Sender: TObject; ACol, ARow: Integer;
   var ALeft, ATop, ARight, ABottom: Integer);
 begin
@@ -767,7 +896,18 @@ begin
   ts := FConnectionGrid.Canvas.TextStyle;
   ts.Alignment := taCenter;
   ts.SingleLine := false;
+
+  if (ARow >= FConnectionGrid.FixedRows) and
+     (FUsedNails[ARow - FConnectionGrid.FixedRows + 1].Operation = opMoveTo)
+  then
+    FConnectionGrid.Canvas.Font.Color := clSilver;
+
   FConnectionGrid.Canvas.TextStyle := ts;
+end;
+
+procedure TMainForm.GridSelectCellHandler(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
+begin
+  DrawEditImage(ARow);
 end;
 
 procedure TMainForm.InitNails(ACount: Integer);
@@ -953,7 +1093,7 @@ end;
 
 procedure TMainForm.Process(ANumLines: Integer);
 var
-  nail1, nail2: Integer;
+  nail1, nail2: TUsedNail;
   P1, P2: TPoint;
   i: Integer;
   endReached: Boolean;
@@ -975,7 +1115,7 @@ begin
     FWorkCanvas.Pen.Style := psSolid;
     FWorkCanvas.Pen.Width := seLineWidth.Value;
 
-    nail1 := FLastNail;
+    nail1.Index := FLastNailIndex;
     for i := 0 to ANumLines - 1 do
     begin
       if i mod 10 = 0 then
@@ -987,14 +1127,15 @@ begin
         if FAborted then exit;
       end;
 
-      nail2 := NextNail(nail1);
-      if not FindDarkestLine(FWorkImg, nail1, nail2) then
+      nail2.Operation := opLineTo;
+      nail2.Index := NextNail(nail1.Index);
+      if not FindDarkestLine(FWorkImg, nail1.Index, nail2.Index) then
         endReached := true;
-      FUsedNails.Add(nail2);
-      P1 := FNailPos[nail1].Round;
-      P2 := FNailPos[nail2].Round;
+      FUsedNails.Add(nail2.Index);
+      P1 := FNailPos[nail1.Index].Round;
+      P2 := FNailPos[nail2.Index].Round;
       FWorkCanvas.Line(P1, P2);
-      FLastNail := nail2;
+      FLastNailIndex := nail2.Index;
       nail1 := nail2;
       if endReached then
         exit;
@@ -1124,9 +1265,9 @@ procedure TMainForm.Reset;
 begin
   InitNails(seNumNails.Value);
   MakeWorkImage(FWorkImg);
-  FLastNail := 0;
+  FLastNailIndex := 0;
   FUsedNails.Clear;
-  {%H-}FUsedNails.Add(FLastNail);
+  {%H-}FUsedNails.Add(FLastNailIndex);
   UpdateBtnStates;
   UpdateTotalLineCount;
   UpdateResultsPage;
@@ -1213,6 +1354,14 @@ begin
   Paintbox.Invalidate;
 end;
 
+procedure TMainForm.tbEditConnectionsChange(Sender: TObject);
+begin
+  FEditing := tbEditConnections.Checked;
+  EditImage.Visible := FEditing;
+  if FEditing then
+    DrawEditImage(FConnectionGrid.Row);
+end;
+
 procedure TMainForm.TrackBarChange(Sender: TObject);
 begin
   if rbMonochrome.Checked then
@@ -1261,23 +1410,23 @@ begin
     try
       MakeWorkImage(img);
       FConnectionGrid.RowCount := FUsedNails.Count + 1;
-      Pprev := FNailPos[FUsedNails[0]];
+      Pprev := FNailPos[FUsedNails[0].Index];
       Pprev.X := Pprev.X * factor;
       Pprev.Y := Pprev.Y * factor;
       r := FConnectionGrid.FixedRows;
       for i := 1 to FUsedNails.Count-1 do
       begin
         FConnectionGrid.Cells[0, r] := IntToStr(i);
-        FConnectionGrid.Cells[1, r] := IntToStr(FUsedNails[i - 1]);
+        FConnectionGrid.Cells[1, r] := IntToStr(FUsedNails[i - 1].Index);
         FConnectionGrid.Cells[2, r] := FormatFloat(FMT, Pprev.X);
         FConnectionGrid.Cells[3, r] := FormatFloat(FMT, Pprev.Y);
-        FConnectionGrid.Cells[4, r] := IntToStr(FUsedNails[i]);
-        P := FNailPos[FUsedNails[i]];
+        FConnectionGrid.Cells[4, r] := IntToStr(FUsedNails[i].Index);
+        P := FNailPos[FUsedNails[i].Index];
         P.X := P.X * factor;
         P.Y := P.Y * factor;
         FConnectionGrid.Cells[5, r] := FormatFloat(FMT, P.X);
         FConnectionGrid.Cells[6, r] := FormatFloat(FMT, P.Y);
-        gray := GetAverageLineGray(img, FUsedNails[i-1], FUsedNails[i], lineWidth);
+        gray := GetAverageLineGray(img, FUsedNails[i-1].Index, FUsedNails[i].Index, lineWidth);
         FConnectionGrid.Cells[7, r] := FormatFloat('0.000', gray);
         Pprev := P;
         inc(r);
@@ -1301,19 +1450,21 @@ begin
 end;
 
 procedure TMainForm.UpdateNailDistance;
+{
 const
   DIST_TEXT = 'Distance between nails: ';
+  }
 var
   circumference: Double;
   dist: Double;
 begin
   if (seNumNails.Value <= 0) then
-    lblNailDistance.Caption := DIST_TEXT
+    infoNailDistance.Caption := ''
   else
   begin
     circumference := seImgDiameter.Value * pi;
     dist := circumference / seNumNails.Value;
-    lblNailDistance.Caption := DIST_TEXT + Format('%.2f mm', [dist]);
+    infoNailDistance.Caption := Format('%.2f mm', [dist]);
   end;
 end;
 
@@ -1333,8 +1484,6 @@ begin
 end;
 
 procedure TMainForm.UpdateWirelength;
-const
-  TOTAL_LENGTH_TEXT = 'Total length of wire: ';
 
   function Distance(P1, P2: TDoublePoint): Double;
   begin
@@ -1349,7 +1498,7 @@ var
 begin
   if (FWorkImg = nil) or (FUsedNails.Count <= 1) then
   begin
-    lblWireLength.Caption := TOTAL_LENGTH_TEXT;
+    infoWireLength.Caption := '';
     exit;
   end;
 
@@ -1358,12 +1507,13 @@ begin
   P1 := FNailPos[0];
   for i := 1 to FUsedNails.Count-1 do
   begin
-    P2 := FNailPos[FUsedNails[i]];
-    len := len + Distance(P1, P2);
+    P2 := FNailPos[FUsedNails[i].Index];
+    if FUsedNails[i].Operation = opLineTo then
+      len := len + Distance(P1, P2);
     P1 := P2;
   end;
   len := len / (FWorkImg.Width*0.5) * R;
-  lblWireLength.Caption := Format(TOTAL_LENGTH_TEXT + '%.2n m', [len]);
+  infoWireLength.Caption := Format('%.2n', [len]);
 end;
 
 procedure TMainForm.WriteIni;
