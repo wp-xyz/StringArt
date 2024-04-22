@@ -613,18 +613,6 @@ object MainForm: TMainForm
           ParentColor = False
         end
       end
-      object lblWireLength: TLabel
-        AnchorSideLeft.Control = ConnectionsHeaderPanel
-        AnchorSideTop.Control = lblNailDistance
-        AnchorSideTop.Side = asrBottom
-        Left = 6
-        Height = 15
-        Top = 81
-        Width = 104
-        BorderSpacing.Top = 4
-        Caption = 'Total length of wire:'
-        ParentColor = False
-      end
       object lblNailDistance: TLabel
         AnchorSideLeft.Control = ConnectionsHeaderPanel
         AnchorSideTop.Control = ConnectionsHeaderPanel
@@ -637,17 +625,31 @@ object MainForm: TMainForm
       end
       object ConnectionsGridPanel: TPanel
         AnchorSideLeft.Control = pgConnections
+        AnchorSideTop.Control = lblWireLength
+        AnchorSideTop.Side = asrBottom
         AnchorSideRight.Control = pgConnections
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = pgConnections
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 555
-        Top = 84
+        Height = 535
+        Top = 104
         Width = 566
         Anchors = [akTop, akLeft, akRight, akBottom]
         BevelOuter = bvNone
         TabOrder = 1
+      end
+      object lblWireLength: TLabel
+        AnchorSideLeft.Control = ConnectionsHeaderPanel
+        AnchorSideTop.Side = asrBottom
+        Left = 6
+        Height = 15
+        Top = 81
+        Width = 104
+        BorderSpacing.Top = 4
+        BorderSpacing.Bottom = 8
+        Caption = 'Total length of wire:'
+        ParentColor = False
       end
     end
   end
