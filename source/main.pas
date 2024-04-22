@@ -50,6 +50,7 @@ type
     EditImage: TImage;
     infoNailDistance: TLabel;
     infoWirelength: TLabel;
+    lblEditConnectionsHelp: TLabel;
     lblMillimeters3: TLabel;
     lblPixels: TLabel;
     lblRealLineWidth: TLabel;
@@ -147,7 +148,6 @@ type
     procedure GridMergeCellsHandler(Sender: TObject; ACol, ARow: Integer; var ALeft, ATop, ARight, ABottom: Integer);
     procedure GridPrepareCanvasHandler(Sender: TObject; {%H-}ACol, {%H-}ARow: Integer; {%H-}AState: TGridDrawState);
     procedure GridSelectCellHandler(Sender: TObject; ACol, ARow: Integer; var CanSelect: Boolean);
-
     procedure InitNails(ACount: Integer);
     procedure InitNails(ACount: Integer; ADiameter: Double; var ANailPos: TDoublePointArray);
     procedure LoadImage(const AFileName: String);
@@ -855,13 +855,29 @@ var
   idx: Integer;
   P: TPoint;
   nail: TUsedNail;
+  s: String;
 begin
   if Key = VK_DELETE then
   begin
+    // Find endpoint of row to be deleted
     idx := FConnectionGrid.Row - FConnectionGrid.FixedRows + 1;
+    s := FConnectionGrid.Cells[0, FConnectionGrid.Row];
+    // For deletion, mark the endpoint as a "moveto" point (in contrast to others which are "lineto")
+    // A second DEL press undeletes the line.
+    // Delete rows are also marked by a * in the counter column.
     nail := FUsedNails[idx];
-    nail.Operation := opMoveTo;
+    if nail.Operation = opLineTo then
+    begin
+      nail.Operation := opMoveTo;
+      if s[1] <> '*' then s := '*' + s;
+    end else
+    begin
+      nail.Operation := opLineTo;
+      if s[1] = '*' then Delete(s, 1, 1);
+    end;
     FUsedNails[idx] := nail;
+    FConnectionGrid.Cells[0, FConnectionGrid.Row] := s;
+    // Draw the modified string image.
     DrawEditImage(FConnectionGrid.Row);
     Key := 0;
   end;
@@ -1295,6 +1311,10 @@ begin
     stream.Write(s[1], Length(s));
     for i := FConnectionGrid.FixedRows to FConnectionGrid.RowCount - 1 do
     begin
+      // Deleted connection
+      if (FUsedNails[i - FConnectionGrid.FixedRows + 1].Operation = opMoveTo) then
+        continue;
+      // Existing connections
       s := FConnectionGrid.Cells[0, i];
       for j := 1 to FConnectionGrid.ColCount-1 do
         s := s + SEPARATOR + StringReplace(FConnectionGrid.Cells[j, i], FormatSettings.DecimalSeparator, '.', [rfReplaceAll]);
@@ -1359,7 +1379,11 @@ begin
   FEditing := tbEditConnections.Checked;
   EditImage.Visible := FEditing;
   if FEditing then
+  begin
     DrawEditImage(FConnectionGrid.Row);
+    FConnectionGrid.SetFocus;
+  end;
+  lblEditConnectionsHelp.Visible := FEditing;
 end;
 
 procedure TMainForm.TrackBarChange(Sender: TObject);

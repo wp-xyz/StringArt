@@ -688,6 +688,22 @@ object MainForm: TMainForm
           TabOrder = 4
           OnChange = tbEditConnectionsChange
         end
+        object lblEditConnectionsHelp: TLabel
+          AnchorSideLeft.Control = tbEditConnections
+          AnchorSideTop.Control = tbEditConnections
+          AnchorSideTop.Side = asrBottom
+          AnchorSideRight.Control = ConnectionsHeaderPanel
+          AnchorSideRight.Side = asrBottom
+          Left = 383
+          Height = 30
+          Top = 58
+          Width = 287
+          Anchors = [akTop, akLeft, akRight]
+          BorderSpacing.Top = 4
+          Caption = 'Press DEL to delete the highlighted line.'#13#10'Press DEL again to undelete.'
+          Visible = False
+          WordWrap = True
+        end
       end
       object ConnectionsGridPanel: TPanel
         AnchorSideLeft.Control = pgConnections
