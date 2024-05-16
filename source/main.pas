@@ -486,9 +486,12 @@ begin
 
     if (ARow >= FConnectionGrid.FixedRows) then
     begin
-      bmp.Canvas.Pen.Color := clRed;
-      bmp.Canvas.Pen.Width := 3;
       idx := ARow - FConnectionGrid.FixedRows + 1;
+      if FUsedNails[idx].Operation = opMoveTo then
+        bmp.Canvas.Pen.Color := clMaroon
+      else
+        bmp.Canvas.Pen.Color := clRed;
+      bmp.Canvas.Pen.Width := 3;
       P := nailPos[FUsedNails[idx-1].Index].Round + Point(dx, dy);
       bmp.Canvas.MoveTo(P);
       P := nailPos[FUsedNails[idx].Index].Round + Point(dx, dy);

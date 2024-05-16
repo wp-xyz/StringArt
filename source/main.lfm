@@ -1,18 +1,18 @@
 object MainForm: TMainForm
   Left = 314
-  Height = 679
+  Height = 666
   Top = 130
-  Width = 990
+  Width = 1017
   Caption = 'String Art'
-  ClientHeight = 679
-  ClientWidth = 990
+  ClientHeight = 666
+  ClientWidth = 1017
   LCLVersion = '3.99.0.0'
   OnActivate = FormActivate
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   object ParamsPanel: TPanel
     Left = 8
-    Height = 671
+    Height = 658
     Top = 8
     Width = 280
     Align = alLeft
@@ -20,7 +20,7 @@ object MainForm: TMainForm
     BorderSpacing.Top = 8
     BorderSpacing.Right = 8
     BevelOuter = bvNone
-    ClientHeight = 671
+    ClientHeight = 658
     ClientWidth = 280
     TabOrder = 0
     object gbImgSelection: TGroupBox
@@ -425,7 +425,7 @@ object MainForm: TMainForm
     object StatusBar: TStatusBar
       Left = 0
       Height = 23
-      Top = 648
+      Top = 635
       Width = 280
       Panels = <      
         item
@@ -439,9 +439,9 @@ object MainForm: TMainForm
   end
   object PageControl: TPageControl
     Left = 296
-    Height = 667
+    Height = 654
     Top = 8
-    Width = 690
+    Width = 717
     ActivePage = pgConnections
     Align = alClient
     BorderSpacing.Left = 8
@@ -452,13 +452,13 @@ object MainForm: TMainForm
     TabOrder = 1
     object pgImages: TTabSheet
       Caption = 'Images'
-      ClientHeight = 639
-      ClientWidth = 682
+      ClientHeight = 626
+      ClientWidth = 709
       object ScrollBox: TScrollBox
         Left = 0
-        Height = 639
+        Height = 626
         Top = 0
-        Width = 682
+        Width = 709
         HorzScrollBar.Increment = 10
         HorzScrollBar.Page = 100
         HorzScrollBar.Smooth = True
@@ -468,8 +468,8 @@ object MainForm: TMainForm
         VertScrollBar.Smooth = True
         VertScrollBar.Tracking = True
         Align = alClient
-        ClientHeight = 635
-        ClientWidth = 678
+        ClientHeight = 622
+        ClientWidth = 705
         Color = clWindow
         ParentBackground = False
         ParentColor = False
@@ -485,19 +485,19 @@ object MainForm: TMainForm
     end
     object pgConnections: TTabSheet
       Caption = 'Connections'
-      ClientHeight = 639
-      ClientWidth = 682
+      ClientHeight = 626
+      ClientWidth = 709
       object ConnectionsHeaderPanel: TPanel
         Left = 6
         Height = 96
         Top = 6
-        Width = 670
+        Width = 697
         Align = alTop
         AutoSize = True
         BorderSpacing.Around = 6
         BevelOuter = bvNone
         ClientHeight = 96
-        ClientWidth = 670
+        ClientWidth = 697
         TabOrder = 0
         object lblImgDiameter: TLabel
           AnchorSideLeft.Control = ConnectionsHeaderPanel
@@ -541,7 +541,7 @@ object MainForm: TMainForm
           AnchorSideTop.Control = ConnectionsHeaderPanel
           AnchorSideRight.Control = ConnectionsHeaderPanel
           AnchorSideRight.Side = asrBottom
-          Left = 539
+          Left = 566
           Height = 25
           Top = 0
           Width = 131
@@ -556,7 +556,7 @@ object MainForm: TMainForm
         object btnSaveHardwareImage: TButton
           AnchorSideTop.Control = ConnectionsHeaderPanel
           AnchorSideRight.Control = btnSaveConnections
-          Left = 383
+          Left = 410
           Height = 25
           Top = 0
           Width = 148
@@ -679,7 +679,7 @@ object MainForm: TMainForm
           AnchorSideLeft.Control = btnSaveHardwareImage
           AnchorSideRight.Control = btnSaveHardwareImage
           AnchorSideRight.Side = asrBottom
-          Left = 383
+          Left = 410
           Height = 25
           Top = 29
           Width = 148
@@ -694,7 +694,7 @@ object MainForm: TMainForm
           AnchorSideTop.Side = asrBottom
           AnchorSideRight.Control = ConnectionsHeaderPanel
           AnchorSideRight.Side = asrBottom
-          Left = 383
+          Left = 410
           Height = 30
           Top = 58
           Width = 287
@@ -714,21 +714,21 @@ object MainForm: TMainForm
         AnchorSideBottom.Control = pgConnections
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 531
+        Height = 518
         Top = 108
-        Width = 682
+        Width = 709
         Anchors = [akTop, akLeft, akRight, akBottom]
         BevelOuter = bvNone
-        ClientHeight = 531
-        ClientWidth = 682
+        ClientHeight = 518
+        ClientWidth = 709
         TabOrder = 1
         object EditImage: TImage
           AnchorSideLeft.Control = Bevel2
           AnchorSideLeft.Side = asrBottom
-          Left = 346
-          Height = 531
+          Left = 359
+          Height = 518
           Top = 0
-          Width = 336
+          Width = 350
           Align = alRight
           Anchors = [akTop, akLeft, akRight, akBottom]
           Center = True
@@ -738,7 +738,7 @@ object MainForm: TMainForm
         object Bevel2: TBevel
           AnchorSideLeft.Control = ConnectionsGridPanel
           AnchorSideLeft.Side = asrCenter
-          Left = 336
+          Left = 349
           Height = 25
           Top = 10
           Width = 10
